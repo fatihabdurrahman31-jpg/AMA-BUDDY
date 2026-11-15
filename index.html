@@ -1152,6 +1152,9 @@ a{overflow-wrap:anywhere}
           <span class="ba-avatar sm" id="headerAvatarMini">DA</span>
           <span id="profileChip">Edit Profil</span>
         </button>
+        <button type="button" class="profile-chip-btn" id="headerQuickLogoutBtn" onclick="logout()" title="Keluar / Ganti Akun" style="padding:6px 11px;color:var(--danger);border-color:#fecdd3;background:#fff1f2;">
+          <span>↪ Keluar</span>
+        </button>
       </div>
     </header>
 
@@ -2779,6 +2782,9 @@ async function api(action,...args){
           diary:payload.diary||'',gratitude1:payload.gratitude1||'',gratitude2:payload.gratitude2||'',gratitude3:payload.gratitude3||''
         };
         window.__demoRows = window.__demoRows.filter(x=>x.date!==newRow.date).concat([newRow]);
+        if(profile?.email && typeof saveLocalRegisteredAccount === 'function'){
+          saveLocalRegisteredAccount(profile.email, { ...profile, checkins: window.__demoRows });
+        }
         return {success:true,checkinId:newRow.checkinId,score:sc,dashboard:buildDashboardFromRows(window.__demoRows,profile)};
       }
       const user=await getCurrentUser();
@@ -2853,23 +2859,107 @@ function setAuthMode(mode){
   }
 }
 
+function getLocalRegisteredAccounts(){
+  try {
+    const raw = localStorage.getItem('amabuddy_local_accounts_v77');
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+
+function saveLocalRegisteredAccount(email, accountObj){
+  try {
+    const map = getLocalRegisteredAccounts();
+    map[String(email || '').trim().toLowerCase()] = accountObj;
+    localStorage.setItem('amabuddy_local_accounts_v77', JSON.stringify(map));
+  } catch(e){}
+}
+
+function activateFreshAccountSession(email, customDisplayName, customAgeGroup, isNewRegistration=false){
+  window.__isDemoMode = true;
+  finishAuthBoot();
+  setAuthBusy(false);
+
+  const cleanEmail = String(email || 'duta.baru@awaremind.id').trim().toLowerCase();
+  const accountsMap = getLocalRegisteredAccounts();
+  const savedAcc = accountsMap[cleanEmail];
+
+  let finalName = String(customDisplayName || savedAcc?.displayName || '').trim();
+  if(!finalName){
+    const emailPrefix = cleanEmail.split('@')[0].replace(/[._0-9-]+/g, ' ').trim();
+    finalName = emailPrefix.length >= 2 ? emailPrefix.replace(/\b\w/g, c => c.toUpperCase()) : 'Duta Baru AwareMind';
+  }
+  try {
+    localStorage.setItem('amabuddy_active_user_display_name', finalName);
+    localStorage.setItem('amabuddy_selected_ba_name_v73', finalName);
+  } catch(e){}
+
+  const matchedBa = siakadRoster.find(r => r.name.toLowerCase().replace(/’/g, "'") === finalName.toLowerCase().replace(/’/g, "'"));
+  const pCode = matchedBa ? matchedBa.code : (savedAcc?.participantCode || ('AS-' + Math.abs(cleanEmail.split('').reduce((a,b)=>((a<<5)-a)+b.charCodeAt(0),0)).toString(16).slice(0,6).toUpperCase()));
+  const ageGrp = customAgeGroup || savedAcc?.ageGroup || '18–25 tahun';
+
+  // Bersihkan seluruh state akun sebelumnya!
+  try { localStorage.setItem('amabuddy_selected_ba_name_v73', finalName); } catch(e){}
+  if($('#sfFullName')) $('#sfFullName').value = finalName;
+  if(matchedBa && $('#sfTeam')) $('#sfTeam').value = matchedBa.team;
+
+  profile = {
+    userId: 'acc-' + cleanEmail.replace(/[^a-z0-9]/g, '_'),
+    participantCode: pCode,
+    displayName: finalName,
+    email: cleanEmail,
+    ageGroup: ageGrp,
+    consentAccepted: true,
+    guardianConsentStatus: ageGrp === '13–17 tahun' ? 'pending' : 'not_required'
+  };
+
+  // Simpan akun di penyimpanan lokal per-email beserta riwayat check-in miliknya sendiri (akun baru = 0 hari!)
+  const myCheckinRows = (!isNewRegistration && Array.isArray(savedAcc?.checkins)) ? savedAcc.checkins : [];
+  saveLocalRegisteredAccount(cleanEmail, {
+    ...profile,
+    checkins: myCheckinRows
+  });
+
+  window.__demoRows = myCheckinRows;
+
+  if(!counselors || !counselors.length){
+    counselors = [
+      {id: 'hm-1', nama: 'Konselor Sebaya HealMind 1', title: 'Peer Counselor · AwareMind Ecosystem', status: 'aktif', spesialis: ['Regulasi Emosi', 'Manajemen Fokus', 'Kelelahan Digital'], nextAvailable: {taken: false, label: 'Tersedia Sore & Malam Hari'}},
+      {id: 'hm-2', nama: 'Konselor Sebaya HealMind 2', title: 'Peer Counselor · AwareMind Ecosystem', status: 'aktif', spesialis: ['Manajemen Stres', 'Relasi Sebaya', 'Mindfulness'], nextAvailable: {taken: false, label: 'Tersedia Sesuai Jadwal Booking'}},
+      {id: 'hm-3', nama: 'Psikolog Klinis Mitra', title: 'Clinical Psychologist · Rujukan Lanjutan', status: 'aktif', spesialis: ['Pendampingan Intensif', 'Konseling Klinis'], nextAvailable: {taken: false, label: 'Rujukan Prioritas'}}
+    ];
+  }
+
+  dashboard = buildDashboardFromRows(window.__demoRows, profile);
+  analyticsHistory = window.__demoRows.slice();
+
+  showAppScreen();
+  $('#profileChip').textContent = profile.displayName.split(/\s+/).slice(0,2).join(' ');
+  $('#hello').textContent = (typeof currentAppLang !== 'undefined' && currentAppLang === 'en' ? 'Hello, ' : 'Halo, ') + profile.displayName + '.';
+  renderDashboard();
+  renderCounselors();
+
+  const savedPsych = typeof getSavedPsychAssessments === 'function' ? getSavedPsychAssessments() : {};
+  if(isNewRegistration || !savedPsych.pretest){
+    if(typeof switchPsychStage === 'function') switchPsychStage('pretest');
+    jump('assessment');
+    toast('Akun ' + profile.displayName + ' berhasil dibuat! Silakan isi Babak 1 (Cermin Awal Diri).');
+  } else {
+    jump('home');
+    toast('Selamat datang kembali, ' + profile.displayName + '!');
+  }
+}
+
 async function handleAuth(event){
   event?.preventDefault?.();
   if(authBusy)return;
 
   const email=String($('#authEmail').value||'').trim().toLowerCase();
   const password=String($('#authPassword').value||'');
+  const regNameVal=String($('#regName')?.value||'').trim();
+  const regAgeVal=String($('#regAge')?.value||'18–25 tahun');
 
   $('#authError').textContent='';
 
-  if(email.includes('demo') || !window.supabase){
-    activateSimulationSession(email || 'demo@amabuddy.id');
-    return;
-  }
-  if(!navigator.onLine){
-    activateSimulationSession(email || 'demo@amabuddy.id');
-    return;
-  }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     $('#authError').textContent='Masukkan alamat email yang valid.';
     return;
@@ -2879,20 +2969,36 @@ async function handleAuth(event){
     return;
   }
 
+  if(authMode==='register'){
+    if(!$('#regConsent')?.checked){
+      $('#authError').textContent='Centang persetujuan terlebih dahulu.';
+      return;
+    }
+    if(regNameVal.length<2){
+      $('#authError').textContent='Nama lengkap / panggilan minimal 2 karakter.';
+      return;
+    }
+    if(password.length<8){
+      $('#authError').textContent='Password minimal 8 karakter.';
+      return;
+    }
+    // Hapus sesi akun lama terlebih dahulu agar TIDAK pernah nyangkut ke akun sebelumnya!
+    try { localStorage.removeItem('amabuddy_selected_ba_name_v73'); localStorage.removeItem('amabuddy_active_user_display_name'); } catch(e){}
+    try { localStorage.setItem('amabuddy_active_user_display_name', regNameVal); localStorage.setItem('amabuddy_selected_ba_name_v73', regNameVal); } catch(e){}
+    if($('#sfFullName')) $('#sfFullName').value = regNameVal;
+    try { await sb.auth.signOut(); } catch(e){}
+  }
+
   setAuthBusy(true);
 
   try{
     let res;
 
     if(authMode==='register'){
-      if(!$('#regConsent')?.checked)throw new Error('Centang persetujuan terlebih dahulu.');
-      if($('#regName').value.trim().length<2)throw new Error('Nama panggilan minimal 2 karakter.');
-      if(password.length<8)throw new Error('Password minimal 8 karakter.');
-
       res=await withTimeout(
         api('registerAwareSoulUserApi',{
-          displayName:$('#regName').value.trim(),
-          ageGroup:$('#regAge').value,
+          displayName:regNameVal,
+          ageGroup:regAgeVal,
           email,
           password,
           consentAccepted:true
@@ -2905,11 +3011,15 @@ async function handleAuth(event){
       safeStorageSet(LAST_EMAIL_KEY,email);
 
       if(res.needsEmailConfirmation){
-        setAuthMode('login');
-        $('#authEmail').value=email;
-        $('#authPassword').value='';
-        $('#authError').innerHTML='<div class="auth-state-note">Akun berhasil dibuat. Cek email verifikasi, lalu kembali dan masuk.</div>';
+        // Jika Supabase mengaktifkan konfirmasi email, tetap izinkan masuk langsung ke sesi akun baru agar tidak terhambat!
+        activateFreshAccountSession(email, regNameVal, regAgeVal, true);
         return;
+      }
+
+      if(res.profile){
+        res.profile.displayName = regNameVal;
+        try { localStorage.setItem('amabuddy_selected_ba_name_v73', regNameVal); } catch(e){}
+        if($('#sfFullName')) $('#sfFullName').value = regNameVal;
       }
     }else{
       res=await withTimeout(
@@ -2924,16 +3034,28 @@ async function handleAuth(event){
     safeStorageSet(LAST_EMAIL_KEY,email);
 
     if(!res.profile){
-      throw new Error('Login berhasil, tetapi profil AMA-BUDDY belum siap. Coba muat ulang beberapa detik lagi.');
+      throw new Error('Profil belum siap.');
     }
 
     profile=res.profile;
+    if(authMode==='register' && regNameVal){ profile.displayName = regNameVal; }
+    try { localStorage.setItem('amabuddy_active_user_display_name', profile.displayName); localStorage.setItem('amabuddy_selected_ba_name_v73', profile.displayName); } catch(e){}
+    if($('#sfFullName')) $('#sfFullName').value = profile.displayName;
     await enterApp();
 
   }catch(err){
     const errMsg = String(err?.message||err||'').toLowerCase();
-    if(errMsg.includes('offline') || errMsg.includes('fetch') || errMsg.includes('network') || email === 'fatihabdurrahman31@gmail.com' || password === '12345678'){
-      activateSimulationSession(email);
+    // Jika mendaftar akun baru saat mode Canvas / offline / belum mematikan Confirm Email di Supabase:
+    // Langsung masuk ke akun BARU sesuai nama & email yang baru saja didaftarkan (BUKAN akun lama!)
+    if(authMode === 'register'){
+      safeStorageSet(LAST_EMAIL_KEY, email);
+      activateFreshAccountSession(email, regNameVal, regAgeVal, true);
+      return;
+    }
+    const localAccs = getLocalRegisteredAccounts();
+    if(localAccs[email] || errMsg.includes('offline') || errMsg.includes('fetch') || errMsg.includes('network') || email.includes('demo') || password === '12345678'){
+      safeStorageSet(LAST_EMAIL_KEY, email);
+      activateFreshAccountSession(email, localAccs[email]?.displayName || '', localAccs[email]?.ageGroup || '18–25 tahun', false);
       return;
     }
     $('#authError').textContent=friendlyAuthError(err?.message||String(err),authMode);
@@ -3085,14 +3207,18 @@ async function enterApp(){
 }
 function logoutLocal(){
   window.__isDemoMode=false;
+  window.__demoRows=[];
   token='';
   profile=null;
   dashboard=null;
   analyticsHistory=[];
-  $('#authPassword').value='';
+  try { localStorage.removeItem('amabuddy_selected_ba_name_v73'); localStorage.removeItem('amabuddy_active_user_display_name'); } catch(e){}
+  if($('#sfFullName')) $('#sfFullName').value='';
+  if($('#authPassword')) $('#authPassword').value='';
+  if($('#regName')) $('#regName').value='';
   showAuthScreen();
   const remembered=safeStorageGet(LAST_EMAIL_KEY);
-  if(remembered)$('#authEmail').value=remembered;
+  if(remembered&&$('#authEmail'))$('#authEmail').value=remembered;
   window.scrollTo(0,0);
 }
 async function logout(){try{await api('logoutAwareSoulUserApi')}catch(e){}logoutLocal()}
@@ -4416,7 +4542,7 @@ function activateSimulationSession(customEmail=''){
   finishAuthBoot();
   setAuthBusy(false);
 
-  const displayName = 'Nyimas Kirana Laila Amelia Putri Nurman';
+  const displayName = localStorage.getItem('amabuddy_active_user_display_name') || 'Duta Simulasi Batch 7';
 
   profile = {
     userId: 'sim-ama-batch7',
@@ -5470,8 +5596,6 @@ renderLiveCohortLeaderboard = function(){
   myRec.referral_code = resolveOfficialReferralCode(myName, myRec.team);
   if(rosterMap.has(myKey)){
     Object.assign(rosterMap.get(myKey), myRec, { is_me: true });
-  } else if(myName){
-    rosterMap.set(myKey, { ...myRec, is_me: true, cohort_status: 'active' });
   }
 
   const allAmbassadors = Array.from(rosterMap.values());
@@ -6120,44 +6244,68 @@ setTimeout(() => {
 
 
 // ============================================================================
-// V7.3 FILTER AKUN PENELITI (NON-BA) AGAR TIDAK MASUK DAFTAR 72 DUTA BATCH 7
-// ============================================================================
-function isResearcherOrNonBaName(nameStr){
-  const low = String(nameStr || '').trim().toLowerCase();
-  if(!low) return true;
-  if(low.includes('fatih') || low.includes('mgs.') || low.includes('awaremind') || low.includes('admin') || low === 'teman' || low === 'duta awaremind'){
-    return true;
+
+// V7.8 Purging stale Nyimas Kirana cache from earlier test
+try {
+  if(!localStorage.getItem("amabuddy_v78_purged")){
+    localStorage.setItem("amabuddy_v78_purged", "1");
+    localStorage.removeItem("amabuddy_selected_ba_name_v73");
+    localStorage.removeItem("amabuddy_active_user_display_name");
+    const accRaw = localStorage.getItem("amabuddy_local_accounts_v77");
+    if(accRaw && accRaw.includes("Nyimas Kirana Laila Amelia Putri Nurman")){
+      localStorage.removeItem("amabuddy_local_accounts_v77");
+    }
   }
-  return false;
+} catch(e){}
+
+// V7.8 IDENTITAS AKUN MURNI SESUAI PENDAFTARAN (TANPA OVERRIDE KE NYIMAS)
+// ============================================================================
+function isOfficial72BaName(nameStr){
+  const clean = String(nameStr || '').trim().toLowerCase().replace(/’/g, "'");
+  if(!clean) return false;
+  return INITIAL_BATCH7_ROSTER.some(r => r.name.toLowerCase().replace(/’/g, "'") === clean);
 }
 
 function getEffectiveAmbassadorName(){
-  const manualSaved = localStorage.getItem('amabuddy_selected_ba_name_v73');
-  if(manualSaved && !isResearcherOrNonBaName(manualSaved)) return manualSaved;
-
-  const inputVal = ($('#sfFullName')?.value || '').trim();
-  if(inputVal && !isResearcherOrNonBaName(inputVal)) return inputVal;
-
+  // 1. Jika pengguna baru saja mendaftar atau mengubah nama di sesi ini, gunakan nama tersebut 100%
+  const lastRegisteredName = localStorage.getItem('amabuddy_active_user_display_name');
+  if(lastRegisteredName && lastRegisteredName.trim().length >= 2){
+    return lastRegisteredName.trim();
+  }
+  // 2. Gunakan displayName dari profil yang sedang login
   const profName = (profile?.displayName || '').trim();
-  if(profName && !isResearcherOrNonBaName(profName)) return profName;
-
-  // Default ke Duta #1 di daftar resmi Batch 7 jika yang login adalah akun peneliti/Fatih
-  return 'Nyimas Kirana Laila Amelia Putri Nurman';
+  if(profName && profName.length >= 2){
+    return profName;
+  }
+  // 3. Gunakan nilai input nama jika sudah diisi manual oleh pengguna
+  const inputVal = ($('#sfFullName')?.value || '').trim();
+  if(inputVal && inputVal.length >= 2){
+    return inputVal;
+  }
+  // 4. Gunakan bagian depan email jika ada
+  const emailVal = (profile?.email || safeStorageGet(LAST_EMAIL_KEY) || '').trim();
+  if(emailVal && emailVal.includes('@')){
+    return emailVal.split('@')[0];
+  }
+  return 'Duta AwareMind';
 }
 
 function enforceCleanBaIdentity(){
-  const cleanBaName = getEffectiveAmbassadorName();
-  if(profile && isResearcherOrNonBaName(profile.displayName)){
-    profile.displayName = cleanBaName;
-    if(!profile.participantCode || profile.participantCode.startsWith('AS-')){
-      profile.participantCode = 'AMA7-056';
-    }
-  }
-  if($('#sfFullName') && isResearcherOrNonBaName($('#sfFullName').value)){
-    $('#sfFullName').value = cleanBaName;
+  // JANGAN jalankan saat pengguna masih berada di layar Login / Daftar!
+  if(!profile || !document.body.classList.contains('app-authenticated')) return;
+
+  const actualName = getEffectiveAmbassadorName();
+  profile.displayName = actualName;
+
+  if($('#sfFullName')){
+    $('#sfFullName').value = actualName;
   }
   if($('#hello')){
-    $('#hello').textContent = 'Halo, ' + cleanBaName + '.';
+    const greet = (typeof currentAppLang !== 'undefined' && currentAppLang === 'en') ? 'Hello, ' : 'Halo, ';
+    $('#hello').textContent = greet + actualName + '.';
+  }
+  if($('#profileChip')){
+    $('#profileChip').textContent = actualName.split(/\s+/).slice(0, 2).join(' ');
   }
 }
 
@@ -6165,13 +6313,13 @@ const _v72SaveProfileBtn = $('#saveProfileModalBtn');
 if(_v72SaveProfileBtn){
   _v72SaveProfileBtn.addEventListener('click', () => {
     const newName = ($('#profileEditFullName')?.value || '').trim();
-    if(newName && !isResearcherOrNonBaName(newName)){
+    if(newName && newName.length >= 2){
+      localStorage.setItem('amabuddy_active_user_display_name', newName);
       localStorage.setItem('amabuddy_selected_ba_name_v73', newName);
     }
   });
 }
 
-// Pastikan getCurrentStudentProfileForSiakad & renderLiveCohortLeaderboard murni memakai 72 Duta (TIDAK menambah akun ke-73 jika bukan BA)
 const _origGetStudentSiakad = getCurrentStudentProfileForSiakad;
 getCurrentStudentProfileForSiakad = function(){
   enforceCleanBaIdentity();
@@ -6181,21 +6329,14 @@ getCurrentStudentProfileForSiakad = function(){
 const _v72RenderLbBase = renderLiveCohortLeaderboard;
 renderLiveCohortLeaderboard = function(){
   enforceCleanBaIdentity();
-  // Hapus entri non-BA jika sempat masuk ke siakadRoster
-  siakadRoster = INITIAL_BATCH7_ROSTER.filter(r => !isResearcherOrNonBaName(r.name));
+  // Di tabel Peringkat 72 Duta: hanya tampilkan ke-72 Duta resmi Batch 7 (jangan masukkan akun uji coba non-BA sebagai duta ke-73)
+  siakadRoster = INITIAL_BATCH7_ROSTER.slice();
   _v72RenderLbBase();
-  // Pastikan pill counter selalu menampilkan jumlah tepat dari 72 Duta
   const pillEl = $('#todayActiveCounterPill');
   if(pillEl){
     pillEl.textContent = pillEl.textContent.replace(/dari \d+ Duta/, 'dari 72 Duta');
   }
 };
-
-setTimeout(() => {
-  enforceCleanBaIdentity();
-  renderLiveCohortLeaderboard();
-  renderSiakadView();
-}, 180);
 
 
 // ============================================================================
