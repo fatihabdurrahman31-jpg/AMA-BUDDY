@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AMA-BUDDY — JITAI Behavioral Incubator | AwareMind Indonesia</title>
+<title>AMA-BUDDY — Ruang Bertumbuh Duta AwareMind Indonesia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -790,6 +790,80 @@ html,body{max-width:100%;overflow-x:hidden}
   background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:11.5px;font-weight:600;
 }
 
+
+/* ===== V7.2 MOBILE FULL ACCESS, AVATAR PP, & MYSTERY CAPSULE UI ===== */
+@media(max-width:900px){
+  /* Pastikan semua slider dapat digeser langsung dengan jari di HP Android & iOS */
+  .slider{touch-action:pan-y;overscroll-behavior:auto}
+  .slider input[type=range],
+  .psych-slider,
+  input[type=range]{
+    pointer-events:auto!important;
+    touch-action:pan-y!important;
+    -webkit-appearance:auto!important;
+    height:34px!important;
+    cursor:pointer;
+  }
+}
+.mobile-quick-strip{
+  display:none;
+}
+@media(max-width:900px){
+  .mobile-quick-strip{
+    display:flex!important;
+    gap:7px;
+    overflow-x:auto;
+    padding:4px 2px 12px;
+    margin:0 -4px 10px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .mobile-quick-strip::-webkit-scrollbar{display:none}
+  .mq-pill{
+    flex:0 0 auto;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    font-size:11.5px;
+    font-weight:700;
+    padding:8px 13px;
+    border-radius:999px;
+    white-space:nowrap;
+    box-shadow:0 2px 8px rgba(45,34,58,.04);
+  }
+  .mq-pill.active{
+    background:var(--am);
+    color:#fff;
+    border-color:var(--am);
+  }
+}
+.ba-avatar{
+  width:38px;height:38px;border-radius:50%;object-fit:cover;flex:0 0 38px;
+  display: inline-grid;place-items:center;font-weight:800;font-size:13px;color:#fff;
+  background:var(--am);border:2px solid #e9d5ff;overflow:hidden;text-transform:uppercase;
+}
+.ba-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.ba-avatar.sm{width:24px;height:24px;flex:0 0 24px;font-size:10px;border-width:1.5px}
+.ba-avatar.lg{width:64px;height:64px;flex:0 0 64px;font-size:22px;border-width:3px}
+.mystery-capsule-box{
+  position:relative;border:2px dashed #c4b5fd;border-radius:20px;padding:28px 20px;
+  background:linear-gradient(135deg,#faf7ff,#f3e8ff);text-align:center;overflow:hidden;
+  margin:14px 0;
+}
+.mystery-blur-preview{
+  filter:blur(9px);opacity:0.42;user-select:none;pointer-events:none;
+  margin-top:16px;text-align:left;max-height:170px;overflow:hidden;
+}
+.profile-chip-btn{
+  display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:5px 12px 5px 6px;font-size:12.5px;font-weight:700;color:var(--ink);
+  cursor:pointer;box-shadow:0 4px 12px rgba(45,34,58,.05);
+}
+.profile-chip-btn:hover{border-color:var(--am)}
+@media(max-width:900px){
+  .profile-chip-btn{display:inline-flex!important;padding:4px 10px 4px 5px;font-size:11px}
+}
+
 </style>
 </head>
 <body>
@@ -806,7 +880,7 @@ html,body{max-width:100%;overflow-x:hidden}
   <div class="auth-brand">
     <div>
       <h1>AMA-BUDDY</h1>
-      <p>Inkubator perilaku pemuda berbasis Just-In-Time Adaptive Intervention (JITAI), Ecological Momentary Assessment, dan Token Economy untuk mereduksi prokrastinasi digital serta memberdayakan Duta AwareMind Indonesia.</p>
+      <p>Ruang bertumbuh terpadu bagi AwareMind Ambassador untuk mengenali ritme diri, mencatat cerita harian, mengumpulkan karya kreatif, dan bertumbuh bersama teman satu divisi.</p>
     </div>
     <div class="small">AwareMind Indonesia · Youth Behavioral Incubator</div>
   </div>
@@ -836,9 +910,9 @@ html,body{max-width:100%;overflow-x:hidden}
           </div>
           <label class="consent-row">
             <input type="checkbox" id="regConsent">
-            <span>Saya memahami bahwa AMA-BUDDY adalah platform inkubasi perilaku dan refleksi mandiri dan monitoring wellbeing, bukan layanan diagnosis, dan saya menyetujui penggunaan data sesuai penjelasan penelitian.</span>
+            <span>Saya memahami bahwa AMA-BUDDY adalah ruang pengembangan diri dan refleksi harian komunitas Duta AwareMind (bukan layanan diagnosis klinis), serta menyetujui ketentuan komunitas.</span>
           </label>
-          <div class="minor-note hidden" id="minorNote">Untuk peserta usia 13–17 tahun, status persetujuan wali dicatat terpisah sesuai protokol penelitian.</div>
+          <div class="minor-note hidden" id="minorNote">Untuk peserta usia 13–17 tahun, keikutsertaan program didampingi dengan izin orang tua/wali.</div>
         </div>
 
         <div class="field">
@@ -881,7 +955,7 @@ html,body{max-width:100%;overflow-x:hidden}
     <div class="logo"><div class="logo-mark">♡</div><div class="logo-copy"><strong>AMA-BUDDY</strong><span>AwareMind Indonesia</span></div></div>
     <nav class="nav">
       <button class="active" data-page="home"><span class="nav-ico">⌂</span><span class="nav-label">Hari Ini</span></button>
-      <button data-page="assessment"><span class="nav-ico">▤</span><span class="nav-label">Asesmen Pre/Post</span></button>
+      <button data-page="assessment"><span class="nav-ico">▤</span><span class="nav-label">Kenali Diri</span></button>
       <button data-page="checkin"><span class="nav-ico">♡</span><span class="nav-label">Daily SoulCheck</span></button>
       <button data-page="tracker"><span class="nav-ico">◈</span><span class="nav-label">SuperForm Tracker</span></button>
       <button data-page="siakad"><span class="nav-ico">❖</span><span class="nav-label">KHS &amp; Sertifikat</span></button>
@@ -892,32 +966,48 @@ html,body{max-width:100%;overflow-x:hidden}
       <button id="sosNav"><span class="nav-ico">＋</span><span class="nav-label">SOS</span></button>
       <button id="logoutBtn"><span class="nav-ico">↪</span><span class="nav-label">Keluar</span></button>
     </nav>
-    <div class="side-card"><b>Target Validitas Data</b><div><span id="sideValidity">0 / 15 hari</span><br>Isi secara konsisten tanpa harus sempurna setiap hari.</div></div>
+    <div class="side-card"><b>Target Konsistensi</b><div><span id="sideValidity">0 / 15 hari</span><br>Isi secara konsisten tanpa harus sempurna setiap hari.</div></div>
   </aside>
 
   <main class="main">
     <header class="top">
       <div><h2 id="pageTitle">Hari Ini</h2><p id="pageSub">Kenali keadaanmu, satu hari dalam satu waktu.</p></div>
-      <div class="profile-chip" id="profileChip">AS-0000</div>
+      <button type="button" class="profile-chip-btn" id="openProfileModalBtn" title="Ubah Profil &amp; Foto Duta">
+        <span class="ba-avatar sm" id="headerAvatarMini">DA</span>
+        <span id="profileChip">Edit Profil</span>
+      </button>
     </header>
+
+    <!-- BARIS AKSES CEPAT LAYAR HP (SEMUA FITUR BISA DIAKSES 1 SENTUHAN DARI HP) -->
+    <div class="mobile-quick-strip" id="mobileQuickStrip" aria-label="Menu cepat layar ponsel">
+      <button type="button" class="mq-pill active" data-mq-page="home">⌂ Hari Ini</button>
+      <button type="button" class="mq-pill" data-mq-page="assessment">▤ Kenali Diri</button>
+      <button type="button" class="mq-pill" data-mq-page="checkin">♡ SoulCheck</button>
+      <button type="button" class="mq-pill" data-mq-page="tracker">◈ Tracker &amp; Peringkat</button>
+      <button type="button" class="mq-pill" data-mq-page="siakad">❖ KHS &amp; Sertifikat</button>
+      <button type="button" class="mq-pill" id="mqEditProfileBtn">✎ Foto Profil (PP)</button>
+      <button type="button" class="mq-pill" data-mq-page="history">Riwayat Diary</button>
+      <button type="button" class="mq-pill" data-mq-page="analytics">Analitik Mood</button>
+      <button type="button" class="mq-pill" data-mq-page="counselors">Konselor HealMind</button>
+    </div>
 
     <section class="page active" id="page-home">
       <div class="grid" style="gap:18px">
         <div class="hero">
           <h3 id="hello">Halo.</h3>
-          <p>Jurnal harianmu bukan tentang menjadi sempurna. AMA-BUDDY memadukan refleksi mikro harian (EMA 2–3 menit), SuperForm Ambassador Tracker, evaluasi transkrip kelulusan duta, serta pendampingan sebaya dalam satu ekosistem terpadu.</p>
-          <div class="hero-actions"><button class="btn primary" data-jump="checkin">Mulai SoulCheck</button><button class="btn soft" data-jump="assessment" id="heroAssessmentBtn">Asesmen Pre/Post-Test</button><button class="btn soft" data-jump="tracker">SuperForm Tracker</button><button class="btn soft" data-jump="siakad">KHS &amp; Sertifikat</button><button class="btn soft" id="openJourneyCardBtn">Kartu E-Rapor</button><button class="btn soft" id="heroCounselor">Konselor HealMind</button><button class="btn danger" id="heroSos">SOS Ruang Tenang</button></div>
+          <p>Jurnal harianmu bukan tentang menjadi sempurna. AMA-BUDDY menemani perjalananmu mengenali diri, mencatat jurnal harian 2–3 menit, mengumpulkan karya divisi, hingga meraih sertifikat kelulusan Duta AwareMind.</p>
+          <div class="hero-actions"><button class="btn primary" data-jump="checkin">Mulai SoulCheck</button><button class="btn soft" data-jump="assessment" id="heroAssessmentBtn">Kenali Diri</button><button class="btn soft" data-jump="tracker">SuperForm Tracker</button><button class="btn soft" data-jump="siakad">KHS &amp; Sertifikat</button><button class="btn soft" id="openJourneyCardBtn">Kartu E-Rapor</button><button class="btn soft" id="heroCounselor">Konselor HealMind</button><button class="btn danger" id="heroSos">SOS Ruang Tenang</button></div>
         </div>
         
         <div id="homePretestGateBanner" class="card" style="border:2px solid var(--am);background:linear-gradient(135deg,#f8f5ff,#ffffff);">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div style="min-width:0;flex:1;">
-              <div class="kicker" style="color:var(--am-dark);">Gerbang Asesmen Wajib (Onboarding &amp; Evaluasi 10 Hari)</div>
-              <div class="title" style="margin:2px 0 6px;" id="homeAssessmentGateTitle">Pre-Test Psikometri (37 Web Slider) &amp; Post-Test 10 Hari</div>
-              <p style="font-size:12.5px;color:var(--muted);margin:0;line-height:1.55;" id="homeAssessmentGateDesc">Peserta baru wajib menyelesaikan 37 butir Web Slider (MAPS-15, BSMAS, DASS-21) dan rata-rata waktu layar pada Pre-Test. Setelah 10 hari mengisi jurnal harian SoulCheck, akses Post-Test (+10 butir SUS) terbuka otomatis.</p>
+              <div class="kicker" style="color:var(--am-dark);">Kapsul Refleksi Perjalanan Duta</div>
+              <div class="title" style="margin:2px 0 6px;" id="homeAssessmentGateTitle">Mulai Langkah Awal: Cermin Diri &amp; Kapsul Perjalanan</div>
+              <p style="font-size:12.5px;color:var(--muted);margin:0;line-height:1.55;" id="homeAssessmentGateDesc">Kenali gaya fokus dan kebiasaan harianmu di awal perjalanan. Kapsul refleksi babak berikutnya akan terbuka secara otomatis seiring konsistensi jurnal harianmu.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button type="button" class="btn primary" data-jump="assessment" id="homeOpenAssessmentBtn">Buka Modul Asesmen</button>
+              <button type="button" class="btn primary" data-jump="assessment" id="homeOpenAssessmentBtn">Buka Kenali Diri</button>
               <button type="button" class="btn soft" data-jump="tracker">Lihat Peringkat Kohor</button>
             </div>
           </div>
@@ -951,7 +1041,7 @@ html,body{max-width:100%;overflow-x:hidden}
         </div>
         <div class="grid g2">
           <div class="card">
-            <div class="kicker">Validitas Data</div><div class="title">Perjalanan 15 Hari</div>
+            <div class="kicker">Konsistensi Harian</div><div class="title">Perjalanan 15 Hari</div>
             <div class="progress"><div id="validityBar"></div></div>
             <div class="day-grid" id="dayGrid"></div>
             <p style="font-size:13px;color:var(--muted)" id="validityCopy">Mulai check-in pertamamu.</p>
@@ -976,36 +1066,35 @@ html,body{max-width:100%;overflow-x:hidden}
     <!-- ==================================================================== -->
     <!-- MODUL ASESMEN PSIKOMETRI: PRE-TEST, MID-TEST, & POST-TEST (SLIDERS) -->
     <!-- ==================================================================== -->
-    <section class="page" id="page-assessment">
+        <section class="page" id="page-assessment">
       <div class="grid" style="gap:18px;">
         <div class="card" style="background:linear-gradient(135deg,#241c2f,#4D387B);color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
             <div style="min-width:0;flex:1;">
-              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;background:rgba(255,255,255,0.16);padding:4px 11px;border-radius:99px;display:inline-block;margin-bottom:8px;">Instrumen Psikometri Tervalidasi Bahasa Indonesia</span>
-              <h3 style="font-size:22px;margin:0 0 6px;font-family:'Poppins',sans-serif;">Asesmen Pre-Test, Mid-Test, &amp; Post-Test AMA-BUDDY</h3>
-              <p style="font-size:12.5px;opacity:0.9;margin:0;line-height:1.55;">Mengintegrasikan 10 butir valid <strong>MAPS-15</strong> (Taqiyah &amp; Syahputra, 2025), 6 butir <strong>BSMAS</strong> (Sumaryati et al., 2024), 21 butir <strong>DASS-21</strong> (Hakim &amp; Aristawati, 2023), log objektif <strong>Daily Screen Time</strong>, serta 10 butir <strong>SUS</strong> (Sharfina &amp; Santoso, 2016) pada Post-Test.</p>
+              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;background:rgba(255,255,255,0.16);padding:4px 11px;border-radius:99px;display:inline-block;margin-bottom:8px;">Peta Perjalanan &amp; Cermin Diri Duta</span>
+              <h3 style="font-size:22px;margin:0 0 6px;font-family:'Poppins',sans-serif;">Kenali Ritme &amp; Keseimbangan Dirimu</h3>
+              <p style="font-size:12.5px;opacity:0.9;margin:0;line-height:1.55;">Tidak ada jawaban benar atau salah di ruang ini. Geser setiap kartu sesuai kebiasaan dan apa yang benar-benar kamu rasakan akhir-akhir ini. Setiap babak baru hanya akan terbuka ketika kamu telah melewati perjalanan harianmu.</p>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button type="button" class="btn soft" id="exportPsychometricCsvBtn" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.28);padding:8px 13px;font-size:12px;font-weight:700;">Unduh CSV Data Psikometri</button>
-            </div>
+            <button type="button" class="btn soft hidden" id="exportPsychometricCsvBtn" style="padding:8px 13px;font-size:12px;">Unduh Data</button>
           </div>
 
           <div class="grid g4" style="gap:10px;background:rgba(0,0,0,0.24);padding:14px;border-radius:16px;text-align:center;">
             <div>
-              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Status Pre-Test (Baseline)</div>
-              <strong style="font-size:14px;color:#fde68a;" id="psychStatusPre">BELUM DIISI</strong>
+              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Babak 1 · Cermin Awal</div>
+              <strong style="font-size:13.5px;color:#fde68a;" id="psychStatusPre">BELUM DIISI</strong>
             </div>
             <div>
-              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Progres Jurnal menuju Post-Test</div>
-              <strong style="font-size:14px;color:#93c5fd;" id="psychJournalingProgress">0 / 10 Hari</strong>
+              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Konsistensi Jurnal Harian</div>
+              <strong style="font-size:13.5px;color:#93c5fd;" id="psychJournalingProgress">0 / 10 Hari</strong>
             </div>
             <div>
-              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Status Post-Test (Hari ke-10+)</div>
-              <strong style="font-size:14px;color:#a7f3d0;" id="psychStatusPost">TERKUNCI (&lt;10 Hari)</strong>
+              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Babak 3 · Kapsul Akhir</div>
+              <strong style="font-size:13.5px;color:#a7f3d0;" id="psychStatusPost">MASIH DISEGEL</strong>
             </div>
             <div>
-              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Durasi Pengisian (Dwell Time)</div>
-              <strong style="font-size:14px;color:#f9a8d4;" id="psychDwellTimer">0 Detik</strong>
+              <div style="font-size:10.5px;opacity:0.8;margin-bottom:2px;">Status Kapsul</div>
+              <strong style="font-size:13.5px;color:#f9a8d4;" id="psychCapsuleStateLabel">Babak 1 Aktif</strong>
+              <span class="hidden" id="psychDwellTimer">0 Detik</span>
             </div>
           </div>
         </div>
@@ -1013,119 +1102,135 @@ html,body{max-width:100%;overflow-x:hidden}
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
             <div>
-              <div class="kicker">Pilih Tahap Evaluasi Program</div>
-              <div class="title" style="margin-bottom:0;">Tahapan Asesmen Web Slider</div>
+              <div class="kicker">Pilih Babak Perjalanan</div>
+              <div class="title" style="margin-bottom:0;">Kapsul Refleksi Bertahap</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;" id="psychStageTabs">
-              <button type="button" class="btn primary psych-stage-btn" data-stage="pretest" id="btnStagePre">1. Pre-Test (Awal / Onboarding)</button>
-              <button type="button" class="btn soft psych-stage-btn" data-stage="midtest" id="btnStageMid">2. Mid-Test (Evaluasi Tengah)</button>
-              <button type="button" class="btn soft psych-stage-btn" data-stage="posttest" id="btnStagePost">3. Post-Test (Setelah 10 Hari Jurnal + SUS)</button>
+              <button type="button" class="btn primary psych-stage-btn" data-stage="pretest" id="btnStagePre">Babak 1 · Cermin Awal Diri</button>
+              <button type="button" class="btn soft psych-stage-btn" data-stage="midtest" id="btnStageMid">Babak 2 · Jeda Tengah</button>
+              <button type="button" class="btn soft psych-stage-btn" data-stage="posttest" id="btnStagePost">Babak 3 · Refleksi Transformasi</button>
             </div>
           </div>
 
-          <div id="psychStageLockNotice" class="notice danger-note hidden" style="margin-bottom:14px;"></div>
-          <div id="psychCompletedNotice" class="notice hidden" style="margin-bottom:14px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;"></div>
+          <div id="psychStageLockNotice" class="hidden"></div>
+          <div id="psychCompletedNotice" class="hidden"></div>
 
-          <div class="grid g4" style="gap:10px;margin-bottom:16px;">
-            <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
-              <div style="font-size:11px;color:var(--muted);font-weight:700;">Skor MAPS-15 (10–50)</div>
-              <strong style="font-size:22px;color:var(--am-dark);" id="liveMapsScore">30</strong>
-              <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveMapsCat">Prokrastinasi Sedang</span>
+          <!-- TAMPILAN KAPSUL TERSEGEL / BLUR (MUNCUL SAAT BABAK BELUM TERBUKA ATAU SUDAH DISELESAIKAN) -->
+          <div id="psychMysteryCapsuleView" class="mystery-capsule-box hidden">
+            <div style="width:54px;height:54px;border-radius:18px;background:var(--am);color:#fff;display:grid;place-items:center;font-size:24px;font-weight:800;margin:0 auto 10px;" id="mysteryCapsuleIcon">❖</div>
+            <h4 style="margin:0 0 6px;font-size:18px;color:var(--am-dark);" id="mysteryCapsuleTitle">Kapsul Perjalanan Ini Masih Disegel</h4>
+            <p style="margin:0 auto 14px;max-width:560px;font-size:13px;color:var(--muted);line-height:1.6;" id="mysteryCapsuleDesc">
+              Isi kartu pada babak ini sengaja disamarkan dan dikunci agar perjalanan harianmu mengalir apa adanya tanpa bocoran. Teruslah mengisi jurnal harian SoulCheck—segel kapsul ini akan terbuka otomatis saat waktunya tiba.
+            </p>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d8cef0;padding:8px 16px;border-radius:99px;font-size:12px;font-weight:700;color:var(--am-dark);" id="mysteryCapsuleBadge">
+              Menunggu pencapaian jurnal harianmu
             </div>
-            <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
-              <div style="font-size:11px;color:var(--muted);font-weight:700;">Skor BSMAS (6–30)</div>
-              <strong style="font-size:22px;color:var(--am-dark);" id="liveBsmasScore">18</strong>
-              <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveBsmasCat">Penggunaan Moderat</span>
-            </div>
-            <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
-              <div style="font-size:11px;color:var(--muted);font-weight:700;">DASS-21 (D / A / S &times; 2)</div>
-              <strong style="font-size:18px;color:var(--am-dark);" id="liveDassScore">D:14 · A:14 · S:14</strong>
-              <span style="display:block;font-size:10.5px;color:var(--muted);">Skor Subskala Dikalikan 2</span>
-            </div>
-            <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
-              <div style="font-size:11px;color:var(--muted);font-weight:700;">Waktu Layar &amp; SUS</div>
-              <strong style="font-size:18px;color:var(--am-dark);" id="liveStAndSus">240 Menit/Hari</strong>
-              <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveSusSub">SUS Post-Test: -</span>
+            <div class="mystery-blur-preview" aria-hidden="true">
+              <div class="psych-item-card"><div class="psych-item-head"><span class="psych-item-code">Kartu Refleksi Rahasia</span><span class="psych-item-val">?</span></div><p class="psych-item-text">Kartu refleksi ini masih tertutup rapat di dalam kapsul perjalananmu dan baru dapat dibaca setelah segel babak terbuka.</p><input type="range" min="1" max="5" value="3" disabled></div>
+              <div class="psych-item-card"><div class="psych-item-head"><span class="psych-item-code">Kartu Refleksi Rahasia</span><span class="psych-item-val">?</span></div><p class="psych-item-text">Nikmati proses bertumbuh satu hari demi satu hari tanpa perlu menebak isi kapsul berikutnya.</p><input type="range" min="1" max="5" value="4" disabled></div>
             </div>
           </div>
 
           <div id="psychFormContainer">
-            <!-- BAGIAN 1: MAPS-15 (10 BUTIR VALID) -->
+            <div class="grid g4" style="gap:10px;margin-bottom:16px;">
+              <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;">Ritme Fokus Belajar</div>
+                <strong style="font-size:20px;color:var(--am-dark);" id="liveMapsScore">Seimbang</strong>
+                <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveMapsCat">10 Kartu Fokus</span>
+              </div>
+              <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;">Kebiasaan Media Sosial</div>
+                <strong style="font-size:20px;color:var(--am-dark);" id="liveBsmasScore">Terkendali</strong>
+                <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveBsmasCat">6 Kartu Kebiasaan</span>
+              </div>
+              <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;">Keseimbangan Emosi</div>
+                <strong style="font-size:17px;color:var(--am-dark);" id="liveDassScore">Terjaga</strong>
+                <span style="display:block;font-size:10.5px;color:var(--muted);">21 Kartu Perasaan</span>
+              </div>
+              <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:#faf8fc;text-align:center;">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;">Rata-Rata Waktu Layar</div>
+                <strong style="font-size:18px;color:var(--am-dark);" id="liveStAndSus">4 Jam 0 Menit</strong>
+                <span style="display:block;font-size:10.5px;color:var(--muted);" id="liveSusSub">Per Hari</span>
+              </div>
+            </div>
+
+            <!-- BAGIAN 1: GAYA FOKUS & RITME BELAJAR -->
             <div style="margin-bottom:22px;">
               <div style="padding:14px 16px;background:var(--am-soft);border-radius:16px;margin-bottom:12px;border-left:4px solid var(--am);">
-                <div class="kicker" style="color:var(--am-dark);">Bagian 1 dari 4 · Prokrastinasi Akademik (10 Butir Valid)</div>
-                <h4 style="margin:4px 0 4px;font-size:16px;">Multidimensional Academic Procrastination Scale (MAPS-15) — Versi Bahasa Indonesia</h4>
-                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Rujukan: Taqiyah &amp; Syahputra (2025), <em>Jurnal Psikologi dan Konseling West Science</em>, 3(1), 67–75 (&alpha; = 0,744; CFI = 0,905; GFI = 0,983). Geser angka <strong>1 (Sangat Tidak Setuju)</strong> hingga <strong>5 (Sangat Setuju)</strong>. Butir PTM 8, PTM 9, dan PTM 12 merupakan butir <em>unfavorable</em> (R) yang skornya dibalik secara otomatis oleh sistem.</p>
+                <div class="kicker" style="color:var(--am-dark);">Bagian 1 · Gaya Fokus &amp; Kebiasaan Belajar</div>
+                <h4 style="margin:4px 0 4px;font-size:16px;">Bagaimana Ritmemu Saat Mengerjakan Tugas atau Belajar?</h4>
+                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Geser tombol pada rentang <strong>1 (Sangat Tidak Sesuai)</strong> hingga <strong>5 (Sangat Sesuai dengan Diriku)</strong>.</p>
               </div>
               <div id="maps15SliderList"></div>
             </div>
 
-            <!-- BAGIAN 2: BSMAS (6 BUTIR) -->
+            <!-- BAGIAN 2: KEBIASAAN DUNIA DIGITAL -->
             <div style="margin-bottom:22px;">
               <div style="padding:14px 16px;background:var(--am-soft);border-radius:16px;margin-bottom:12px;border-left:4px solid var(--am);">
-                <div class="kicker" style="color:var(--am-dark);">Bagian 2 dari 4 · Intensitas Penggunaan Media Sosial (6 Butir)</div>
-                <h4 style="margin:4px 0 4px;font-size:16px;">Bergen Social Media Addiction Scale (BSMAS) — Versi Bahasa Indonesia</h4>
-                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Rujukan: Sumaryati, Sirodj, &amp; Gadama (2024), <em>Jurnal Psikogenesis</em>, 12(1), 10–18 (N = 483; CR = 0,91; VE = 0,65; RMSEA = 0,016; CFI = 0,998).<br><strong>Instruksi Pengantar:</strong> <em>"Seberapa sering dalam setahun terakhir Anda..."</em> (Geser <strong>1 = Sangat Jarang</strong> hingga <strong>5 = Sangat Sering</strong>).</p>
+                <div class="kicker" style="color:var(--am-dark);">Bagian 2 · Kebiasaan di Dunia Digital</div>
+                <h4 style="margin:4px 0 4px;font-size:16px;">Seberapa Sering Kamu Mengalami Hal Ini Saat Bermain Media Sosial?</h4>
+                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;"><em>"Seberapa sering dalam keseharianmu kamu..."</em> Geser dari <strong>1 (Sangat Jarang)</strong> hingga <strong>5 (Sangat Sering)</strong>.</p>
               </div>
               <div id="bsmasSliderList"></div>
             </div>
 
-            <!-- BAGIAN 3: DASS-21 (21 BUTIR) -->
+            <!-- BAGIAN 3: KESEIMBANGAN ENERGI & PERASAAN MINGGUAN -->
             <div style="margin-bottom:22px;">
               <div style="padding:14px 16px;background:var(--am-soft);border-radius:16px;margin-bottom:12px;border-left:4px solid var(--am);">
-                <div class="kicker" style="color:var(--am-dark);">Bagian 3 dari 4 · Kondisi Emosional Mingguan (21 Butir)</div>
-                <h4 style="margin:4px 0 4px;font-size:16px;">Depression Anxiety Stress Scales-21 (DASS-21) — Versi Bahasa Indonesia</h4>
-                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Rujukan: Hakim &amp; Aristawati (2023), <em>Jurnal Psikologi Ulayat</em>, 10(2), 232–250 (N = 629; CR Depresi = 0,88; CR Kecemasan = 0,86; CR Stres = 0,77).<br><strong>Instruksi Pengantar:</strong> <em>"Bacalah setiap pernyataan dan geser angka 0, 1, 2, atau 3 yang menunjukkan seberapa banyak pernyataan tersebut berlaku bagi Anda selama seminggu terakhir."</em> (<strong>0 = Tidak pernah dialami</strong>, <strong>1 = Kadang-kadang dialami</strong>, <strong>2 = Sering dialami</strong>, <strong>3 = Sangat sering dialami</strong>).</p>
+                <div class="kicker" style="color:var(--am-dark);">Bagian 3 · Keseimbangan Energi &amp; Perasaan Seminggu Terakhir</div>
+                <h4 style="margin:4px 0 4px;font-size:16px;">Apa yang Paling Sering Kamu Rasakan Selama Seminggu Terakhir?</h4>
+                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Bacalah setiap kalimat dengan santai, lalu geser angka <strong>0, 1, 2, atau 3</strong> sesuai seberapa sering hal tersebut kamu alami dalam seminggu terakhir.</p>
               </div>
               <div id="dass21SliderList"></div>
             </div>
 
-            <!-- BAGIAN 4: DAILY SCREEN TIME OBJEKTIF -->
+            <!-- BAGIAN 4: CATATAN WAKTU LAYAR HARIAN -->
             <div style="margin-bottom:22px;">
               <div style="padding:14px 16px;background:var(--am-soft);border-radius:16px;margin-bottom:12px;border-left:4px solid var(--am);">
-                <div class="kicker" style="color:var(--am-dark);">Bagian 4 · Pengukuran Perilaku Layar Objektif</div>
-                <h4 style="margin:4px 0 4px;font-size:16px;">Rata-Rata Daily Screen Time &amp; Bukti Tangkapan Layar</h4>
-                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Cek menu <strong>Digital Wellbeing</strong> (Android) atau <strong>Screen Time</strong> (iOS) pada ponselmu, masukkan rata-rata durasi harian dalam jam dan menit, serta lampirkan tautan/bukti tangkapan layar.</p>
+                <div class="kicker" style="color:var(--am-dark);">Bagian 4 · Catatan Waktu Layar Ponsel</div>
+                <h4 style="margin:4px 0 4px;font-size:16px;">Rata-Rata Waktu Layar Harianmu Saat Ini</h4>
+                <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.55;">Buka pengaturan <strong>Digital Wellbeing</strong> (Android) atau <strong>Screen Time</strong> (iOS) di ponselmu, lalu isi rata-rata jam dan menit per hari beserta bukti tangkapan layarnya.</p>
               </div>
               <div class="card" style="border:1px solid var(--line);box-shadow:none;">
                 <div class="grid g3">
                   <div class="field">
-                    <label for="psychStHours">Durasi Rata-Rata (Jam / Hari)</label>
+                    <label for="psychStHours">Rata-Rata Jam / Hari</label>
                     <input type="number" id="psychStHours" min="0" max="24" value="4" placeholder="Contoh: 5">
                   </div>
                   <div class="field">
-                    <label for="psychStMinutes">Durasi Rata-Rata (Menit / Hari)</label>
+                    <label for="psychStMinutes">Rata-Rata Menit / Hari</label>
                     <input type="number" id="psychStMinutes" min="0" max="59" value="0" placeholder="Contoh: 30">
                   </div>
                   <div class="field">
-                    <label>Konversi Otomatis Sistem</label>
-                    <input type="text" id="psychStTotalComputed" readonly value="240 Menit/Hari (4.0 Jam)" style="background:#f8f6fa;font-weight:700;color:var(--am-dark);">
+                    <label>Total Durasi Harian</label>
+                    <input type="text" id="psychStTotalComputed" readonly value="4 Jam 0 Menit (240 Menit)" style="background:#f8f6fa;font-weight:700;color:var(--am-dark);">
                   </div>
                 </div>
                 <div class="grid g2">
                   <div class="field">
-                    <label for="psychStProofUrl">Tautan Bukti Screenshot Digital Wellbeing / Screen Time (Google Drive / Link Gambar)</label>
+                    <label for="psychStProofUrl">Tautan Screenshot Digital Wellbeing / Screen Time (Google Drive)</label>
                     <input type="url" id="psychStProofUrl" placeholder="https://drive.google.com/open?id=...">
                   </div>
                   <div class="field">
-                    <label for="psychStFileUpload">Atau Unggah File Tangkapan Layar (Opsional — Otomatis Tercatat)</label>
+                    <label for="psychStFileUpload">Atau Pilih Gambar Screenshot dari Galeri HP</label>
                     <input type="file" id="psychStFileUpload" accept="image/*" style="padding:9px 12px;">
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- BAGIAN KHUSUS POST-TEST: 10 BUTIR SYSTEM USABILITY SCALE (SUS) -->
+            <!-- BAGIAN KHUSUS BABAK 3: PENGALAMAN MENGGUNAKAN RUANG TUMBUH AMA-BUDDY -->
             <div id="psychSusSection" class="hidden" style="margin-bottom:22px;">
               <div style="padding:14px 16px;background:#ecfdf5;border-radius:16px;margin-bottom:12px;border-left:4px solid #059669;">
-                <div class="kicker" style="color:#065f46;">Komponen Khusus Post-Test · Evaluasi Kebergunaan Sistem (10 Butir)</div>
-                <h4 style="margin:4px 0 4px;font-size:16px;color:#064e3b;">System Usability Scale (SUS) — Versi Bahasa Indonesia</h4>
-                <p style="margin:0;font-size:12px;color:#047857;line-height:1.55;">Rujukan: Sharfina &amp; Santoso (2016), <em>An Indonesian adaptation of the System Usability Scale (SUS)</em>. Geser angka <strong>1 (Sangat Tidak Setuju)</strong> hingga <strong>5 (Sangat Setuju)</strong>. Sistem menghitung skor akhir SUS dalam rentang <strong>0–100</strong> secara otomatis.</p>
+                <div class="kicker" style="color:#065f46;">Bagian Tambahan Babak 3 · Kesan Penggunaan Aplikasi</div>
+                <h4 style="margin:4px 0 4px;font-size:16px;color:#064e3b;">Seberapa Nyaman Pengalamanmu Menggunakan AMA-BUDDY?</h4>
+                <p style="margin:0;font-size:12px;color:#047857;line-height:1.55;">Geser angka <strong>1 (Sangat Tidak Setuju)</strong> hingga <strong>5 (Sangat Setuju)</strong> berdasarkan pengalamanmu selama menggunakan aplikasi ini.</p>
               </div>
               <div id="sus10SliderList"></div>
             </div>
 
-            <button type="button" class="btn primary wide" id="submitPsychometricBtn" style="padding:15px;font-size:14px;">Simpan &amp; Kunci Hasil Asesmen Psikometri (Sinkronisasi Supabase &amp; Spreadsheet)</button>
+            <button type="button" class="btn primary wide" id="submitPsychometricBtn" style="padding:15px;font-size:14px;">Simpan &amp; Segel Kapsul Babak Ini</button>
           </div>
         </div>
       </div>
@@ -1143,10 +1248,10 @@ html,body{max-width:100%;overflow-x:hidden}
             </div>
           </div>
           <div id="onceOnlyBanner" class="notice hidden" style="margin-bottom:16px;padding:14px;border-radius:14px;background:rgba(77,56,123,0.06);border:1px solid rgba(77,56,123,0.18);color:var(--ink);">
-            <strong style="display:block;margin-bottom:4px;font-size:14px;">Pengisian Hari Ini Telah Terkunci (Once-Only Submission)</strong>
-            <span style="font-size:13px;line-height:1.55;display:block;">Sesuai protokol integritas data Ecological Momentary Assessment (EMA), pencatatan afektif hanya dilakukan satu kali per hari kalender agar mencerminkan kondisi nyata tanpa manipulasi.</span>
+            <strong style="display:block;margin-bottom:4px;font-size:14px;">Jurnal Hari Ini Sudah Tersimpan</strong>
+            <span style="font-size:13px;line-height:1.55;display:block;">Kamu sudah mencatat kondisi harimu untuk hari ini. Nikmati sisa harimu dan kembali lagi besok untuk melanjutkan perjalananmu.</span>
           </div>
-          <div class="kicker">Tab 1 · Ecological Momentary Assessment (2–3 Menit)</div><div class="title">Daily SoulCheck</div>
+          <div class="kicker">Refleksi Harian · 2–3 Menit</div><div class="title">Daily SoulCheck</div>
           <div class="field"><label>Mood</label><div class="moods" id="moods">
             <button class="mood active" data-value="Sangat Baik">Sangat Baik</button><button class="mood" data-value="Baik">Baik</button><button class="mood" data-value="Netral">Netral</button><button class="mood" data-value="Kurang">Kurang</button><button class="mood" data-value="Buruk">Buruk</button>
           </div></div>
@@ -1218,7 +1323,7 @@ html,body{max-width:100%;overflow-x:hidden}
             <span id="trackerDivBadge" style="font-size:12px;font-weight:700;background:rgba(255,255,255,0.22);color:#fff;padding:4px 12px;border-radius:14px;">Sinkronisasi Aktif</span>
           </div>
           <h3 style="font-size:21px;margin:0 0 8px;font-family:'Poppins',sans-serif;">Token Economy &amp; SuperForm Ambassador</h3>
-          <p style="font-size:13px;opacity:0.9;margin:0 0 16px;line-height:1.55;">Satu pintu pelaporan misi wajib, tantangan mingguan, karya inisiatif, presensi sesi Zoom, dan evaluasi Mind-Captain yang langsung masuk ke basis data Supabase serta Spreadsheet SuperForm Batch 7.</p>
+          <p style="font-size:13px;opacity:0.9;margin:0 0 16px;line-height:1.55;">Satu pintu pelaporan misi wajib, tantangan mingguan, karya inisiatif, presensi sesi Zoom, dan keaktifan kelompok yang langsung memperbarui poin serta capaian kelulusanmu.</p>
           
           <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;background:rgba(0,0,0,0.24);padding:14px;border-radius:14px;text-align:center;margin-bottom:14px;">
             <div>
@@ -1313,9 +1418,9 @@ html,body{max-width:100%;overflow-x:hidden}
 
       <div class="grid g2" style="align-items:start;">
         <div class="card">
-          <div class="kicker">Formulir Terpadu Satu Pintu (Supabase + Spreadsheet Sync)</div>
+          <div class="kicker">Formulir Pelaporan Terpadu Duta</div>
           <div class="title">Setor Laporan Aktivitas SuperForm</div>
-          <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Isi langsung dari sini. Saat disimpan, laporan otomatis masuk ke tabel Supabase (<code>ama_superform_submissions</code>), terkirim ke Google Spreadsheet SuperForm (45 kolom asli), dan menambah nilai KHS kelulusanmu.</p>
+          <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Laporkan progres karya dan kehadiranmu langsung dari sini. Setiap laporan yang dikirim otomatis menambah poin keaktifan, memperbarui posisi peringkatmu, dan tercatat di transkrip KHS kelulusan.</p>
 
           <div class="grid g2">
             <div class="field">
@@ -1601,17 +1706,17 @@ html,body{max-width:100%;overflow-x:hidden}
             </div>
           </div>
 
-          <button type="button" class="btn primary wide" id="submitSuperFormBtn" style="margin-top:8px;">Simpan ke Supabase &amp; Sinkronkan ke Spreadsheet</button>
-          <div id="sfSuccessNotice" class="notice hidden" style="margin-top:10px;font-size:12px;">Laporan berhasil disimpan ke Supabase, dikirim ke Google Spreadsheet SuperForm, dan memperbarui nilai KHS-mu.</div>
+          <button type="button" class="btn primary wide" id="submitSuperFormBtn" style="margin-top:8px;">Kirim Laporan Aktivitas</button>
+          <div id="sfSuccessNotice" class="notice hidden" style="margin-top:10px;font-size:12px;">Laporan aktivitasmu berhasil dikirim! Poin keaktifan, peringkat, dan nilai KHS-mu telah diperbarui.</div>
         </div>
 
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
             <div>
-              <div class="kicker">Database Terintegrasi Spreadsheet &amp; Supabase</div>
+              <div class="kicker">Galeri Karya &amp; Keaktifan Duta</div>
               <div class="title" style="margin-bottom:0;">Portofolio Kohor AMA Batch 7</div>
             </div>
-            <button type="button" class="btn soft" id="exportSuperFormCsvBtn" style="padding:7px 12px;font-size:11.5px;font-weight:700;">Unduh CSV Spreadsheet</button>
+            <button type="button" class="btn soft hidden" id="exportSuperFormCsvBtn" style="padding:7px 12px;font-size:11.5px;font-weight:700;">Unduh CSV</button>
           </div>
 
           <div class="grid g2" style="gap:8px;margin-bottom:10px;">
@@ -1638,7 +1743,7 @@ html,body{max-width:100%;overflow-x:hidden}
 
           <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;">
             <span id="feedShowingCount">Menampilkan laporan kohor...</span>
-            <span>Sumber: SuperForm Batch 7 &amp; Supabase</span>
+            <span>Portofolio Resmi Duta AwareMind</span>
           </div>
 
           <div id="missionFeed" style="display:grid;gap:10px;max-height:620px;overflow-y:auto;padding-right:4px;"></div>
@@ -1737,7 +1842,7 @@ html,body{max-width:100%;overflow-x:hidden}
               PREDIKAT: LULUS — WELLBEING CHAMPION &amp; ACTIVE AMBASSADOR
             </div>
             <p style="font-size:12.5px;color:#5f556d;max-width:580px;margin:0 auto 18px;line-height:1.6;" id="certBodyCopy">
-              Telah menyelesaikan program inkubasi perilaku 30 hari pada kohor AwareMind Ambassador (AMA) Batch 7 melalui integrasi Ecological Momentary Assessment (EMA), modifikasi perilaku Token Economy, dan penciptaan portofolio psikoedukasi digital untuk mereduksi prokrastinasi digital serta mendukung pencapaian SDG 3, SDG 4, dan SDG 17.
+              Telah menyelesaikan program pengembangan diri dan kepemimpinan pemuda AwareMind Ambassador (AMA) Batch 7 dengan dedikasi tinggi dalam refleksi kesadaran diri, kolaborasi tim divisi, serta penciptaan karya edukasi kesehatan mental yang berdampak positif bagi generasi muda Indonesia.
             </p>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:540px;margin:0 auto;padding-top:16px;border-top:1px solid #dfd8e8;font-size:11.5px;">
               <div>
@@ -1745,7 +1850,7 @@ html,body{max-width:100%;overflow-x:hidden}
                 <strong style="font-size:14px;color:#382553;" id="certGpaVal">3.85 / 4.00 (A)</strong>
               </div>
               <div>
-                <div style="color:#827a8a;">Validitas Data EMA</div>
+                <div style="color:#827a8a;">Konsistensi Jurnal</div>
                 <strong style="font-size:14px;color:#382553;" id="certEmaVal">15 Hari Terverifikasi</strong>
               </div>
               <div>
@@ -1798,61 +1903,7 @@ html,body{max-width:100%;overflow-x:hidden}
           <div class="analytics-note">Nilai harian dapat naik-turun. Lihat kecenderungannya dari beberapa hari, bukan dari satu titik saja.</div>
         </div>
 
-        <div class="card">
-          <div class="kicker">Evaluasi Kuasi-Eksperimental Within-Subject (O1 &rarr; X &rarr; O2)</div>
-          <div class="title">Ringkasan Metrik Psikometri &amp; Perilaku Kohor Batch 7 (N = 70)</div>
-          <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.55;">Perbandingan hasil pengukuran instrumen baku sebelum (Pre-Test O1) dan sesudah (Post-Test O2) intervensi inkubasi perilaku 30 hari AMA-BUDDY.</p>
-          <div style="overflow-x:auto;">
-            <table class="siakad-table">
-              <thead>
-                <tr>
-                  <th>Instrumen &amp; Indikator</th>
-                  <th>Pre-Test (O1)</th>
-                  <th>Post-Test (O2)</th>
-                  <th>Perubahan</th>
-                  <th>Signifikansi &amp; Effect Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight:600;">Prokrastinasi Digital (PPS)</td>
-                  <td>42,5 (Tinggi)</td>
-                  <td>27,8 (Rendah)</td>
-                  <td style="color:#15803d;font-weight:700;">-34,6%</td>
-                  <td>p &lt; 0,001 · Cohen's d = 0,85</td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">Distres Emosional (DASS-21)</td>
-                  <td>38,2 (Sedang)</td>
-                  <td>19,4 (Normal)</td>
-                  <td style="color:#15803d;font-weight:700;">-49,2%</td>
-                  <td>p &lt; 0,001 · Cohen's d = 0,92</td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">Waktu Layar Pasif Harian</td>
-                  <td>6,4 Jam/Hari</td>
-                  <td>3,8 Jam/Hari</td>
-                  <td style="color:#15803d;font-weight:700;">-40,6% (-2,6 Jam)</td>
-                  <td>p &lt; 0,01 · Cohen's d = 0,78</td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">Kesejahteraan Positif (WEMWBS)</td>
-                  <td>39,1</td>
-                  <td>54,6</td>
-                  <td style="color:var(--am-dark);font-weight:700;">+39,6%</td>
-                  <td>p &lt; 0,001 · Cohen's d = 0,80</td>
-                </tr>
-                <tr>
-                  <td style="font-weight:600;">System Usability Scale (SUS)</td>
-                  <td>-</td>
-                  <td>78,5 / 100</td>
-                  <td style="color:var(--am-dark);font-weight:700;">Grade A (Good)</td>
-                  <td>Kepatuhan EMA &gt; 80%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        
       </div>
     </section>
 
@@ -1891,7 +1942,7 @@ html,body{max-width:100%;overflow-x:hidden}
           <div class="resource-icon">✎</div>
           <h4>Micro Journaling</h4>
           <p>Tulis apa yang terjadi, apa yang kamu rasakan, dan satu hal kecil yang bisa kamu lakukan setelah ini.</p>
-          <div class="resource-basis"><b>Landasan:</b> ecological momentary assessment (EMA) dan refleksi harian untuk menangkap pengalaman sedekat mungkin dengan konteks nyata.</div>
+          <div class="resource-basis"><b>Manfaat:</b> menuangkan pikiran secara jujur setiap hari membantu menjernihkan kepala dan mengenali pola suasana hati.</div>
           <div class="resource-action"><button class="btn soft" data-jump="checkin">Buka Diary</button></div>
         </article>
 
@@ -1921,7 +1972,7 @@ html,body{max-width:100%;overflow-x:hidden}
       </div>
 
       <div class="theory-note" style="margin-top:18px">
-        <b>Landasan teori utama AMA-BUDDY:</b> Ecological Momentary Assessment (Shiffman et al., 2008), PERMA well-being (Seligman, 2011), dan habit formation (Lally et al., 2010). Teknik pada halaman ini berfungsi sebagai dukungan singkat dalam pengalaman aplikasi.
+        <b>Tentang Ruang Tenang AMA-BUDDY:</b> Seluruh latihan singkat di halaman ini dirancang untuk menemani waktu istirahatmu, menenangkan pikiran yang ramai, dan membantumu kembali fokus dengan nyaman.
       </div>
     </section>
 
@@ -1938,10 +1989,10 @@ html,body{max-width:100%;overflow-x:hidden}
 
   <nav class="mobile-bottom-nav" aria-label="Navigasi mobile">
     <button class="mobile-nav-btn active" data-page="home"><span class="mobile-nav-icon">⌂</span><span>Hari Ini</span></button>
+    <button class="mobile-nav-btn" data-page="assessment"><span class="mobile-nav-icon">▤</span><span>Kenali Diri</span></button>
     <button class="mobile-nav-btn" data-page="checkin"><span class="mobile-nav-icon">♡</span><span>SoulCheck</span></button>
     <button class="mobile-nav-btn" data-page="tracker"><span class="mobile-nav-icon">◈</span><span>Tracker</span></button>
-    <button class="mobile-nav-btn" data-page="siakad"><span class="mobile-nav-icon">❖</span><span>Kelulusan</span></button>
-    <button class="mobile-nav-btn" id="mobileMoreBtn"><span class="mobile-nav-icon">•••</span><span>Lainnya</span></button>
+    <button class="mobile-nav-btn" id="mobileMoreBtn"><span class="mobile-nav-icon">•••</span><span>Menu &amp; KHS</span></button>
   </nav>
   <button class="mobile-sos-fab" id="mobileSosBtn" aria-label="Buka SOS"><span>＋</span> SOS</button>
 
@@ -1957,9 +2008,9 @@ html,body{max-width:100%;overflow-x:hidden}
       <button class="icon-close" id="closeMoreBtn" aria-label="Tutup">×</button>
     </div>
     <div class="more-menu">
-      <button data-more-page="assessment"><span>▤</span><div><b>Asesmen Psikometri (Pre/Mid/Post-Test)</b><small>37 Web Slider MAPS-15, BSMAS, DASS-21, SUS, dan Screen Time.</small></div></button>
+      <button data-more-page="assessment"><span>▤</span><div><b>Kenali Diri &amp; Kapsul Perjalanan</b><small>Refleksi gaya fokus, kebiasaan digital, dan keseimbangan diri.</small></div></button>
       <button data-more-page="siakad"><span>❖</span><div><b>KHS &amp; Sertifikat Kelulusan</b><small>Transkrip nilai perilaku, tier, dan sertifikat duta.</small></div></button>
-      <button data-more-page="analytics"><span>⌁</span><div><b>Analitik Mood &amp; Riset</b><small>Tren wellbeing, stress load, dan metrik kuasi-eksperimental.</small></div></button>
+      <button data-more-page="analytics"><span>⌁</span><div><b>Analitik Mood &amp; Kebiasaan</b><small>Tren ketenangan, energi harian, dan rangkuman perjalananmu.</small></div></button>
       <button data-more-page="history"><span>✎</span><div><b>Riwayat Diary</b><small>Lihat kembali catatan refleksi dan rasa syukur harianmu.</small></div></button>
       <button data-more-page="resources"><span>✦</span><div><b>Sumber Daya</b><small>Grounding, napas, journaling, dan dukungan.</small></div></button>
       <button data-more-page="counselors"><span>◌</span><div><b>Konselor HealMind</b><small>Lihat konselor dan jadwal yang tersedia.</small></div></button>
@@ -2090,7 +2141,7 @@ html,body{max-width:100%;overflow-x:hidden}
               <strong style="font-size:16px;color:#a7f3d0;" id="jcScore">3.85 (A)</strong>
             </div>
             <div style="background:rgba(255,255,255,0.08);padding:11px;border-radius:12px;">
-              <div style="font-size:10px;opacity:0.75;margin-bottom:2px;">Hari Aktif EMA</div>
+              <div style="font-size:10px;opacity:0.75;margin-bottom:2px;">Hari Jurnal Aktif</div>
               <strong style="font-size:16px;color:#93c5fd;" id="jcDays">15 / 30 Hari</strong>
             </div>
             <div style="background:rgba(255,255,255,0.08);padding:11px;border-radius:12px;">
@@ -2115,6 +2166,69 @@ html,body{max-width:100%;overflow-x:hidden}
     </div>
   </div>
 
+  
+  <!-- MODAL EDIT PROFIL & FOTO PROFIL (PP) DUTA -->
+  <div id="profileEditModal" class="modal-wrap">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-head" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h3 style="margin:0;font-size:21px;">Profil &amp; Foto Duta (PP)</h3>
+          <p style="margin:4px 0 0;opacity:0.85;font-size:12px;">Foto profilmu akan tampil di Peringkat Duta, keaktifan harian, dan Kartu E-Rapor.</p>
+        </div>
+        <button type="button" id="closeProfileModalBtn" style="border:0;background:rgba(255,255,255,0.18);color:#fff;width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:18px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;padding:14px;background:#faf7ff;border:1px solid #d8cef0;border-radius:16px;">
+          <div class="ba-avatar lg" id="profileModalAvatarPreview">DA</div>
+          <div style="min-width:0;flex:1;">
+            <strong style="font-size:15px;display:block;color:var(--ink);" id="profileModalNamePreview">Duta AwareMind</strong>
+            <span style="font-size:12px;color:var(--am-dark);font-weight:700;display:block;margin:2px 0 8px;" id="profileModalRefPreview">Kode Referral: AMA7DOP-DUTA</span>
+            <label for="profilePhotoInput" class="btn primary" style="display:inline-block;padding:7px 13px;font-size:11.5px;cursor:pointer;margin-right:6px;">Pilih Foto dari HP / Galeri</label>
+            <button type="button" class="btn soft" id="removeProfilePhotoBtn" style="padding:7px 11px;font-size:11.5px;">Reset Foto</button>
+            <input type="file" id="profilePhotoInput" accept="image/*" class="hidden">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="profileEditFullName">Nama Lengkap Duta (Pilih dari Daftar 72 Duta Batch 7 atau Ketik)</label>
+          <input type="text" id="profileEditFullName" list="amaBatch7NamesList" placeholder="Ketik atau pilih namamu...">
+        </div>
+
+        <div class="grid g2">
+          <div class="field">
+            <label for="profileEditTeam">Divisi Tim Duta</label>
+            <select id="profileEditTeam">
+              <option value="DOPAMINE TEAM — Creative Storyteller">Dopamine Team</option>
+              <option value="ENDORPHIN TEAM — Resilient Action-Taker">Endorphin Team</option>
+              <option value="OXYTOCIN TEAM — Ultimate Support System">Oxytocin Team</option>
+              <option value="SEROTONIN TEAM — Growth Enthusiast">Serotonin Team</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="profileEditColor">Warna Latar Inisial (Jika Tanpa Foto)</label>
+            <select id="profileEditColor">
+              <option value="#65458f">Ungu AwareMind</option>
+              <option value="#0d9488">Hijau Toska Tenang</option>
+              <option value="#db2777">Merah Muda Energi</option>
+              <option value="#2563eb">Biru Fokus</option>
+              <option value="#d97706">Emas Hangat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="profileEditBio">Motto / Status Singkat Duta</label>
+          <input type="text" id="profileEditBio" placeholder="Contoh: Bertumbuh pelan-pelan bersama AwareMind">
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button type="button" class="btn soft wide" id="cancelProfileModalBtn">Tutup</button>
+          <button type="button" class="btn primary wide" id="saveProfileModalBtn">Simpan Profil &amp; Foto PP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PANEL KONTROL TERSEMBUNYI (100% Hidden dari BA; hanya aktif via ketuk 5x judul AMA-BUDDY atau ?demo=1) -->
   <div id="hiddenJudgePanel" class="hidden" style="position:fixed;bottom:16px;right:16px;z-index:9990;background:#1e162b;color:#fff;padding:14px 16px;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.18);width:290px;font-size:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -2126,7 +2240,9 @@ html,body{max-width:100%;overflow-x:hidden}
       <button type="button" onclick="jump('siakad')" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(167,243,208,0.4);background:rgba(16,185,129,0.18);color:#a7f3d0;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">2. Lihat KHS &amp; Sertifikat Kelulusan</button>
       <button type="button" onclick="triggerJudgeSoulLock()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(244,63,94,0.45);background:rgba(244,63,94,0.2);color:#fda4af;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">3. Simulasikan Pemicu Critical SoulLock</button>
       <button type="button" onclick="unlockJudgeSoulLock()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#e2e8f0;text-align:left;cursor:pointer;font-size:11px;">4. Normalisasi / Buka Kunci Form</button>
-      <button type="button" onclick="jump('assessment');if(typeof switchPsychStage==='function')switchPsychStage('posttest',true);" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(147,197,253,0.4);background:rgba(59,130,246,0.18);color:#bfdbfe;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">5. Buka Simulasi Asesmen Pre/Post-Test</button>
+      <button type="button" onclick="jump('assessment');if(typeof switchPsychStage==='function')switchPsychStage('posttest',true);" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(147,197,253,0.4);background:rgba(59,130,246,0.18);color:#bfdbfe;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">5. Buka Segel Semua Babak (Khusus Peneliti)</button>
+      <button type="button" onclick="document.getElementById('exportPsychometricCsvBtn')?.click()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(253,230,138,0.4);background:rgba(234,179,8,0.18);color:#fef08a;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">6. Unduh CSV Data Psikometri (Peneliti)</button>
+      <button type="button" onclick="document.getElementById('exportSuperFormCsvBtn')?.click()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(253,230,138,0.4);background:rgba(234,179,8,0.18);color:#fef08a;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">7. Unduh CSV 45 Kolom SuperForm (Peneliti)</button>
     </div>
   </div>
 
@@ -2826,8 +2942,8 @@ function jump(page){
     history:['Diary','Lihat kembali cerita dan pola harianmu.'],
     resources:['Sumber Daya','Latihan singkat untuk membantu regulasi diri.'],
     counselors:['Konselor','Temukan dukungan dari HealMind.'],
-    assessment:['Asesmen Psikometri (Pre/Mid/Post-Test)','37 butir Web Slider MAPS-15, BSMAS, DASS-21, Daily Screen Time, dan 10 butir SUS.'],
-    tracker:['SuperForm Ambassador Tracker','Integrasi satu pintu pelaporan aktivitas duta, Google Spreadsheet Batch 7, dan Supabase.'],
+    assessment:['Kenali Diri & Kapsul Perjalanan','Refleksi gaya fokus, kebiasaan digital, dan keseimbangan harianmu.'],
+    tracker:['Ambassador Tracker & Peringkat','Pelaporan karya, keaktifan harian, dan peringkat konsistensi Duta AwareMind.'],
     siakad:['KHS & Sertifikat Kelulusan','Kartu Hasil Studi (KHS), Indeks Prestasi Perilaku (IPK), status tier, dan sertifikat kelulusan duta.']
   };
   if(meta[page]){
@@ -2895,7 +3011,7 @@ async function saveCheckin(){
     if(typeof syncDailySoulCheckToSpreadsheet === 'function'){
       syncDailySoulCheckToSpreadsheet(payload, qSt);
     }
-    dashboard=res.dashboard;renderDashboard();toast('Check-in hari ini tersimpan ke Supabase & Spreadsheet.');
+    dashboard=res.dashboard;renderDashboard();toast('Jurnal harianmu hari ini berhasil disimpan!');
     if(dashboard.soulLock)openSos();
     else jump('home');
   }catch(e){toast(e.message||String(e))}
@@ -3642,7 +3758,7 @@ function renderSiakadView(){
     tbody.innerHTML = `
       <tr>
         <td style="font-weight:700;color:var(--am-dark);">MK-EMA101</td>
-        <td><strong>Konsistensi Refleksi Afektif Harian (EMA 4-Slider &amp; Gratitude)</strong><br><span style="font-size:11px;color:var(--muted);">Inisiasi kebiasaan minimal 15 hari aktif sesuai kurva asimtotik Lally et al. (2010)</span></td>
+        <td><strong>Konsistensi Jurnal Refleksi Harian (SoulCheck &amp; Syukur)</strong><br><span style="font-size:11px;color:var(--muted);">Keaktifan menulis refleksi harian minimal 15 hari selama periode program</span></td>
         <td>4 SKS (40%)</td>
         <td>&ge; 15 Hari Aktif</td>
         <td style="font-weight:700;">${rec.emaDays} Hari Terisi</td>
@@ -3880,7 +3996,7 @@ function syncSecurityLocks(){
       saveBtn.textContent = 'Form Terkunci Sementara (Critical SoulLock Aktif)';
     } else if(alreadyFilledToday){
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Check-in Hari Ini Telah Terkunci (Once-Only Submission)';
+      saveBtn.textContent = 'Jurnal Hari Ini Sudah Tersimpan';
     } else {
       saveBtn.disabled = false;
       saveBtn.textContent = 'Simpan Check-in';
@@ -4127,9 +4243,7 @@ function activateSimulationSession(customEmail=''){
   finishAuthBoot();
   setAuthBusy(false);
 
-  const displayName = (customEmail && customEmail.includes('fatih'))
-    ? 'Mgs. M. Fatih Abdurrahman'
-    : 'Nyimas Kirana Laila Amelia Putri Nurman';
+  const displayName = 'Nyimas Kirana Laila Amelia Putri Nurman';
 
   profile = {
     userId: 'sim-ama-batch7',
@@ -5345,6 +5459,491 @@ $('#lbFindMeBtn')?.addEventListener('click', () => {
     toast('Posisi peringkatmu telah ditampilkan.');
   }
 });
+
+
+
+// ============================================================================
+// V7.2 STEALTH NON-EXPERIMENT UI, MYSTERY CAPSULE BLUR, & AVATAR PP SYSTEM
+// ============================================================================
+function getAvatarStorageMap(){
+  try {
+    const raw = localStorage.getItem('amabuddy_avatars_v72');
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){
+    return {};
+  }
+}
+
+function saveAvatarForAmbassador(nameStr, dataUrl, colorHex, bioStr){
+  try {
+    const key = String(nameStr || '').trim().toLowerCase().replace(/’/g, "'");
+    if(!key) return;
+    const map = getAvatarStorageMap();
+    map[key] = {
+      photo: dataUrl || (map[key]?.photo || ''),
+      color: colorHex || (map[key]?.color || '#65458f'),
+      bio: bioStr != null ? bioStr : (map[key]?.bio || '')
+    };
+    localStorage.setItem('amabuddy_avatars_v72', JSON.stringify(map));
+  } catch(e){}
+}
+
+function getInitials(nameStr){
+  const parts = String(nameStr || 'Duta AwareMind').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return 'DA';
+  if(parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function getTeamDefaultColor(teamStr){
+  const t = String(teamStr || '').toUpperCase();
+  if(t.includes('ENDORPHIN')) return '#be185d';
+  if(t.includes('OXYTOCIN')) return '#7c3aed';
+  if(t.includes('SEROTONIN')) return '#0f766e';
+  return '#5b21b6';
+}
+
+function renderAvatarHtml(nameStr, teamStr, sizeClass=''){
+  const key = String(nameStr || '').trim().toLowerCase().replace(/’/g, "'");
+  const map = getAvatarStorageMap();
+  const custom = map[key];
+  const initials = getInitials(nameStr);
+  const bg = (custom && custom.color) ? custom.color : getTeamDefaultColor(teamStr);
+  const cls = ('ba-avatar ' + sizeClass).trim();
+  if(custom && custom.photo && custom.photo.startsWith('data:image')){
+    return `<span class="${cls}" style="background:${bg};"><img src="${custom.photo}" alt="${esc(nameStr)}"></span>`;
+  }
+  return `<span class="${cls}" style="background:${bg};">${esc(initials)}</span>`;
+}
+
+// Bangun ulang slider Kenali Diri TANPA kode skala riset (WD 3, PTM 8 (R), Salience, D1 Depresi, SUS)
+buildPsychSlidersOnce = function(){
+  const mapsBox = $('#maps15SliderList');
+  if(!mapsBox) return;
+  if(mapsBox.dataset.v72Clean === '1') return;
+  mapsBox.dataset.v72Clean = '1';
+
+  mapsBox.innerHTML = MAPS15_ITEMS.map((item, i) => `
+    <div class="psych-item-card">
+      <div class="psych-item-head">
+        <span class="psych-item-code">Kartu Refleksi ${i+1}</span>
+        <span class="psych-item-val" id="val_${item.id}">3</span>
+      </div>
+      <p class="psych-item-text">${esc(item.text)}</p>
+      <input type="range" class="psych-slider" id="${item.id}" min="1" max="5" step="1" value="3">
+      <div class="psych-scale-labels">
+        <span>1 = Sangat Tidak Sesuai</span>
+        <span>2 = Kurang Sesuai</span>
+        <span>3 = Netral</span>
+        <span>4 = Cukup Sesuai</span>
+        <span>5 = Sangat Sesuai</span>
+      </div>
+    </div>
+  `).join('');
+
+  const bsmasBox = $('#bsmasSliderList');
+  if(bsmasBox){
+    bsmasBox.innerHTML = BSMAS_ITEMS.map((item, i) => `
+      <div class="psych-item-card">
+        <div class="psych-item-head">
+          <span class="psych-item-code">Kartu Refleksi ${i+11}</span>
+          <span class="psych-item-val" id="val_${item.id}">3</span>
+        </div>
+        <p class="psych-item-text">${esc(item.text)}</p>
+        <input type="range" class="psych-slider" id="${item.id}" min="1" max="5" step="1" value="3">
+        <div class="psych-scale-labels">
+          <span>1 = Sangat Jarang</span>
+          <span>2 = Jarang</span>
+          <span>3 = Kadang-kadang</span>
+          <span>4 = Sering</span>
+          <span>5 = Sangat Sering</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const dassBox = $('#dass21SliderList');
+  if(dassBox){
+    dassBox.innerHTML = DASS21_ITEMS.map((item, i) => `
+      <div class="psych-item-card">
+        <div class="psych-item-head">
+          <span class="psych-item-code">Kartu Refleksi ${i+17}</span>
+          <span class="psych-item-val" id="val_${item.id}">1</span>
+        </div>
+        <p class="psych-item-text">${esc(item.text)}</p>
+        <input type="range" class="psych-slider" id="${item.id}" min="0" max="3" step="1" value="1">
+        <div class="psych-scale-labels">
+          <span>0 = Tidak pernah</span>
+          <span>1 = Kadang-kadang</span>
+          <span>2 = Sering</span>
+          <span>3 = Sangat sering</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const susBox = $('#sus10SliderList');
+  if(susBox){
+    susBox.innerHTML = SUS10_ITEMS.map((item, i) => `
+      <div class="psych-item-card">
+        <div class="psych-item-head">
+          <span class="psych-item-code">Kesan Aplikasi ${i+1}</span>
+          <span class="psych-item-val" id="val_${item.id}">4</span>
+        </div>
+        <p class="psych-item-text">${esc(item.text)}</p>
+        <input type="range" class="psych-slider" id="${item.id}" min="1" max="5" step="1" value="4">
+        <div class="psych-scale-labels">
+          <span>1 = Sangat Tidak Setuju</span>
+          <span>2 = Tidak Setuju</span>
+          <span>3 = Netral</span>
+          <span>4 = Setuju</span>
+          <span>5 = Sangat Setuju</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  $$('.psych-slider').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const badge = $('#val_' + inp.id);
+      if(badge) badge.textContent = inp.value;
+      computeLivePsychometricScores();
+    });
+  });
+
+  ['psychStHours', 'psychStMinutes'].forEach(id => {
+    $('#' + id)?.addEventListener('input', computeLivePsychometricScores);
+  });
+};
+
+// Update computeLivePsychometricScores agar tampilan untuk BA ramah & non-klinis, tapi objek return untuk database peneliti tetap 100% akurat!
+const _rawComputeScores = computeLivePsychometricScores;
+computeLivePsychometricScores = function(){
+  const res = _rawComputeScores();
+  // Ubah teks kartu ringkasan atas agar ramah dan tidak menampilkan istilah MAPS-15 / BSMAS / DASS-21
+  if($('#liveMapsScore')){
+    $('#liveMapsScore').textContent = res.score_maps15 <= 23 ? 'Teratur' : (res.score_maps15 <= 35 ? 'Dinamis' : 'Perlu Jeda');
+  }
+  if($('#liveMapsCat')){
+    $('#liveMapsCat').textContent = 'Gaya Fokus Belajar';
+  }
+  if($('#liveBsmasScore')){
+    $('#liveBsmasScore').textContent = res.score_bsmas <= 14 ? 'Mindful' : (res.score_bsmas <= 20 ? 'Moderat' : 'Aktif Layar');
+  }
+  if($('#liveBsmasCat')){
+    $('#liveBsmasCat').textContent = 'Kebiasaan Digital';
+  }
+  if($('#liveDassScore')){
+    $('#liveDassScore').textContent = res.score_dass_total <= 36 ? 'Tenang & Stabil' : (res.score_dass_total <= 66 ? 'Cukup Padat' : 'Butuh Istirahat');
+  }
+  if($('#liveStAndSus')){
+    $('#liveStAndSus').textContent = `${res.screentime_hours}j ${res.screentime_minutes}m / Hari`;
+  }
+  if($('#liveSusSub')){
+    $('#liveSusSub').textContent = `${res.screentime_total_minutes} Menit/Hari`;
+  }
+  if($('#psychStTotalComputed')){
+    $('#psychStTotalComputed').value = `${res.screentime_hours} Jam ${res.screentime_minutes} Menit (${res.screentime_total_minutes} Menit/Hari)`;
+  }
+  return res;
+};
+
+// Override renderPsychometricModule untuk sistem KAPSUL MISTERI (Blur & Sembunyikan pertanyaan Babak 2 & 3 sebelum terbuka, dan segel Babak 1 setelah diisi!)
+renderPsychometricModule = function(){
+  if($('#maps15SliderList')) $('#maps15SliderList').dataset.v72Clean = '';
+  buildPsychSlidersOnce();
+
+  const saved = getSavedPsychAssessments();
+  const activeDays = getActiveJournalingDaysCount();
+
+  const hasPre = !!saved.pretest;
+  const hasMid = !!saved.midtest;
+  const hasPost = !!saved.posttest;
+
+  const midUnlocked = (activeDays >= 5) || psychForceUnlockOverride;
+  const postUnlocked = (activeDays >= 10) || psychForceUnlockOverride;
+
+  if($('#psychStatusPre')){
+    $('#psychStatusPre').textContent = hasPre ? 'TERSIMPAN' : 'TERBUKA (MULAI DI SINI)';
+    $('#psychStatusPre').style.color = hasPre ? '#a7f3d0' : '#fde68a';
+  }
+  if($('#psychJournalingProgress')){
+    $('#psychJournalingProgress').textContent = `${activeDays} / 10 Hari`;
+  }
+  if($('#psychStatusPost')){
+    $('#psychStatusPost').textContent = hasPost ? 'TERSIMPAN' : (postUnlocked ? 'TERBUKA' : 'MASIH DISEGEL');
+    $('#psychStatusPost').style.color = hasPost ? '#a7f3d0' : (postUnlocked ? '#fde68a' : '#fda4af');
+  }
+
+  const stageNamesFriendly = {
+    pretest: 'Babak 1 · Cermin Awal Diri',
+    midtest: 'Babak 2 · Jeda Tengah Perjalanan',
+    posttest: 'Babak 3 · Refleksi Transformasi'
+  };
+  if($('#psychCapsuleStateLabel')){
+    $('#psychCapsuleStateLabel').textContent = stageNamesFriendly[currentPsychStage] || 'Babak 1';
+  }
+
+  // Update Kartu di Beranda (Hari Ini) tanpa kata Pre-Test / Post-Test / Psikometri
+  const gateTitle = $('#homeAssessmentGateTitle');
+  const gateDesc = $('#homeAssessmentGateDesc');
+  const gateBtn = $('#homeOpenAssessmentBtn');
+  if(gateTitle && gateDesc && gateBtn){
+    if(!hasPre){
+      gateTitle.textContent = 'Langkah Pertama Duta: Isi Cermin Awal Diri (Babak 1)';
+      gateDesc.textContent = 'Kenali ritme fokus, kebiasaan digital, dan keseimbangan dirimu saat memulai perjalanan bersama AwareMind.';
+      gateBtn.textContent = 'Mulai Babak 1 Sekarang';
+    } else if(!hasPost && postUnlocked){
+      gateTitle.textContent = 'Segel Kapsul Babak 3 Telah Terbuka!';
+      gateDesc.textContent = `Selamat! Kamu telah konsisten menulis jurnal harian. Sekarang kamu dapat membuka dan mengisi Kapsul Babak 3 (Refleksi Transformasi).`;
+      gateBtn.textContent = 'Buka Kapsul Babak 3';
+    } else if(hasPre && !hasPost){
+      gateTitle.textContent = `Cermin Awal Tersimpan · Menuju Pembukaan Kapsul Berikutnya (${activeDays}/10 Hari)`;
+      gateDesc.textContent = `Cermin awal dirimu telah disegel di dalam kapsul perjalanan. Lanjutkan menulis Daily SoulCheck setiap hari untuk membuka segel babak berikutnya.`;
+      gateBtn.textContent = 'Lihat Kapsul Perjalanan';
+    } else {
+      gateTitle.textContent = 'Seluruh Kapsul Perjalanan Diri Telah Lengkap!';
+      gateDesc.textContent = 'Terima kasih telah bertumbuh bersama AMA-BUDDY. Seluruh catatan perjalananmu telah tersimpan di portofolio kelulusan.';
+      gateBtn.textContent = 'Lihat Kapsul Perjalanan';
+    }
+  }
+
+  const stageDoneRecord = saved[currentPsychStage];
+  const isLockedMid = (currentPsychStage === 'midtest' && !midUnlocked && !stageDoneRecord);
+  const isLockedPost = (currentPsychStage === 'posttest' && !postUnlocked && !stageDoneRecord);
+
+  const capsuleBox = $('#psychMysteryCapsuleView');
+  const formContainer = $('#psychFormContainer');
+  const susSec = $('#psychSusSection');
+  if(susSec) susSec.classList.toggle('hidden', currentPsychStage !== 'posttest');
+
+  if(stageDoneRecord){
+    // Jika babak ini SUDAH diisi: sembunyikan seluruh daftar pernyataan agar mereka tidak bisa menghafal atau melihat ulang item untuk babak berikutnya!
+    if(formContainer) formContainer.classList.add('hidden');
+    if(capsuleBox){
+      capsuleBox.classList.remove('hidden');
+      $('#mysteryCapsuleIcon').textContent = '✓';
+      $('#mysteryCapsuleTitle').textContent = `${stageNamesFriendly[currentPsychStage]} Telah Tersimpan di Kapsul Waktu`;
+      $('#mysteryCapsuleDesc').textContent = `Catatan refleksimu pada babak ini telah disimpan pada ${stageDoneRecord.submitted_at} dan disegel rapat agar perjalananmu ke babak berikutnya tetap segar dan alami.`;
+      $('#mysteryCapsuleBadge').textContent = `Status: Tersimpan Aman · Waktu Layar Tercatat: ${stageDoneRecord.screentime_hours} Jam ${stageDoneRecord.screentime_minutes} Menit/Hari`;
+    }
+  } else if(isLockedMid || isLockedPost){
+    // Jika babak ini MASIH TERKUNCI: sembunyikan seluruh form & tampilkan Kapsul Blur tanpa bocoran/clue sedikit pun!
+    if(formContainer) formContainer.classList.add('hidden');
+    if(capsuleBox){
+      capsuleBox.classList.remove('hidden');
+      $('#mysteryCapsuleIcon').textContent = '❖';
+      $('#mysteryCapsuleTitle').textContent = `${stageNamesFriendly[currentPsychStage]} Masih Disegel`;
+      $('#mysteryCapsuleDesc').textContent = 'Isi refleksi pada babak ini sengaja disamarkan dan tidak ditampilkan sebelum waktunya tiba. Nikmati perjalanan harianmu di Daily SoulCheck tanpa perlu menebak isi kapsul ini.';
+      const targetDays = currentPsychStage === 'midtest' ? 5 : 10;
+      $('#mysteryCapsuleBadge').textContent = `Segel terbuka otomatis setelah ${targetDays} hari jurnal harian (Progresmu: ${activeDays}/${targetDays} hari)`;
+    }
+  } else {
+    // Babak sedang aktif & belum diisi -> tampilkan form slider yang bersih
+    if(capsuleBox) capsuleBox.classList.add('hidden');
+    if(formContainer) formContainer.classList.remove('hidden');
+    const submitBtn = $('#submitPsychometricBtn');
+    if(submitBtn){
+      submitBtn.disabled = false;
+      submitBtn.textContent = `Simpan & Segel ${stageNamesFriendly[currentPsychStage]}`;
+    }
+  }
+
+  computeLivePsychometricScores();
+};
+
+// ============================================================================
+// MODAL PROFIL & FOTO PROFIL (PP) DUTA + INTEGRASI KE LEADERBOARD
+// ============================================================================
+function syncHeaderAndModalProfileUI(){
+  const { myName, teamVal, refCode } = populateBatch7AutocompleteAndReferral();
+  const key = myName.toLowerCase().replace(/’/g, "'");
+  const avatarMap = getAvatarStorageMap();
+  const custom = avatarMap[key] || {};
+
+  const miniWrap = $('#headerAvatarMini');
+  if(miniWrap){
+    const bg = custom.color || getTeamDefaultColor(teamVal);
+    miniWrap.style.background = bg;
+    if(custom.photo && custom.photo.startsWith('data:image')){
+      miniWrap.innerHTML = `<img src="${custom.photo}" alt="${esc(myName)}">`;
+    } else {
+      miniWrap.textContent = getInitials(myName);
+    }
+  }
+
+  const chip = $('#profileChip');
+  if(chip){
+    const shortName = myName.split(/\s+/).slice(0, 2).join(' ');
+    chip.textContent = shortName || 'Profil Saya';
+  }
+
+  const modalPrev = $('#profileModalAvatarPreview');
+  if(modalPrev){
+    const bg = custom.color || getTeamDefaultColor(teamVal);
+    modalPrev.style.background = bg;
+    if(custom.photo && custom.photo.startsWith('data:image')){
+      modalPrev.innerHTML = `<img src="${custom.photo}" alt="${esc(myName)}">`;
+    } else {
+      modalPrev.textContent = getInitials(myName);
+    }
+  }
+
+  if($('#profileModalNamePreview')) $('#profileModalNamePreview').textContent = myName;
+  if($('#profileModalRefPreview')) $('#profileModalRefPreview').textContent = `Kode Referral Resmi: ${refCode}`;
+}
+
+function openProfileEditModal(){
+  const { myName, teamVal } = populateBatch7AutocompleteAndReferral();
+  const key = myName.toLowerCase().replace(/’/g, "'");
+  const custom = getAvatarStorageMap()[key] || {};
+
+  if($('#profileEditFullName')) $('#profileEditFullName').value = myName;
+  if($('#profileEditTeam')) $('#profileEditTeam').value = teamVal;
+  if($('#profileEditColor')) $('#profileEditColor').value = custom.color || getTeamDefaultColor(teamVal);
+  if($('#profileEditBio')) $('#profileEditBio').value = custom.bio || '';
+
+  syncHeaderAndModalProfileUI();
+  $('#profileEditModal')?.classList.add('open');
+  lockPageScroll();
+}
+
+function closeProfileEditModal(){
+  $('#profileEditModal')?.classList.remove('open');
+  unlockPageScroll();
+}
+
+$('#openProfileModalBtn')?.addEventListener('click', openProfileEditModal);
+$('#mqEditProfileBtn')?.addEventListener('click', openProfileEditModal);
+$('#closeProfileModalBtn')?.addEventListener('click', closeProfileEditModal);
+$('#cancelProfileModalBtn')?.addEventListener('click', closeProfileEditModal);
+$('#profileEditModal')?.addEventListener('click', e => {
+  if(e.target.id === 'profileEditModal') closeProfileEditModal();
+});
+
+// Kompresi Foto Profil (PP) otomatis ke ukuran 160x160 JPEG ringan (<15KB) menggunakan Canvas HTML5
+let _pendingUploadedPhotoDataUrl = null;
+$('#profilePhotoInput')?.addEventListener('change', e => {
+  const file = e.target?.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 160;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minSide = Math.min(img.width, img.height);
+      const sx = (img.width - minSide) / 2;
+      const sy = (img.height - minSide) / 2;
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+      _pendingUploadedPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.78);
+      const modalPrev = $('#profileModalAvatarPreview');
+      if(modalPrev){
+        modalPrev.innerHTML = `<img src="${_pendingUploadedPhotoDataUrl}" alt="Preview PP">`;
+      }
+      toast('Foto profil siap disimpan!');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+$('#removeProfilePhotoBtn')?.addEventListener('click', () => {
+  _pendingUploadedPhotoDataUrl = '';
+  const nameVal = ($('#profileEditFullName')?.value || profile?.displayName || 'Duta AwareMind').trim();
+  const modalPrev = $('#profileModalAvatarPreview');
+  if(modalPrev){
+    modalPrev.innerHTML = '';
+    modalPrev.textContent = getInitials(nameVal);
+  }
+  toast('Foto profil direset ke inisial.');
+});
+
+$('#saveProfileModalBtn')?.addEventListener('click', () => {
+  const newName = ($('#profileEditFullName')?.value || '').trim();
+  const newTeam = $('#profileEditTeam')?.value || 'DOPAMINE TEAM — Creative Storyteller';
+  const newColor = $('#profileEditColor')?.value || '#65458f';
+  const newBio = ($('#profileEditBio')?.value || '').trim();
+
+  if(newName.length < 2){
+    toast('Masukkan nama lengkap duta terlebih dahulu.');
+    return;
+  }
+
+  if(profile) profile.displayName = newName;
+  if($('#sfFullName')) $('#sfFullName').value = newName;
+  if($('#sfTeam')) $('#sfTeam').value = newTeam;
+  if($('#hello')) $('#hello').textContent = 'Halo, ' + newName + '.';
+
+  const key = newName.toLowerCase().replace(/’/g, "'");
+  const existingCustom = getAvatarStorageMap()[key] || {};
+  const finalPhoto = _pendingUploadedPhotoDataUrl !== null ? _pendingUploadedPhotoDataUrl : (existingCustom.photo || '');
+  saveAvatarForAmbassador(newName, finalPhoto, newColor, newBio);
+  _pendingUploadedPhotoDataUrl = null;
+
+  populateBatch7AutocompleteAndReferral();
+  syncHeaderAndModalProfileUI();
+  renderLiveCohortLeaderboard();
+  renderSiakadView();
+  closeProfileEditModal();
+  toast('Profil & Foto Duta (PP) berhasil diperbarui dan tampil di Peringkat!');
+});
+
+// Upgrade renderLiveCohortLeaderboard agar setiap nama di Peringkat & Keaktifan Hari Ini menampilkan Foto Profil (PP) bundar!
+const _v71RenderLeaderboard = renderLiveCohortLeaderboard;
+renderLiveCohortLeaderboard = function(){
+  _v71RenderLeaderboard();
+  syncHeaderAndModalProfileUI();
+
+  // Sisipkan avatar PP bundar pada setiap baris #individualLeaderboardBox dan #todaySubmittedTicker
+  const myName = (profile?.displayName || $('#sfFullName')?.value || 'Duta AwareMind').trim();
+  const myKey = myName.toLowerCase().replace(/’/g, "'");
+
+  $$('#individualLeaderboardBox .lb-row').forEach(row => {
+    const strongEl = row.querySelector('strong');
+    if(!strongEl || row.querySelector('.ba-avatar')) return;
+    const rawTitle = strongEl.textContent.replace('(Saya)', '').trim();
+    const spanTeam = row.querySelector('span')?.textContent || '';
+    const rankNumEl = row.querySelector('.lb-rank-num');
+    if(rankNumEl){
+      const avatarMarkup = renderAvatarHtml(rawTitle, spanTeam, '');
+      rankNumEl.insertAdjacentHTML('afterend', avatarMarkup);
+    }
+  });
+
+  $$('#todaySubmittedTicker .today-chip').forEach(chip => {
+    const spans = chip.querySelectorAll('span');
+    if(spans.length >= 2 && !chip.querySelector('.ba-avatar')){
+      const personName = spans[1].textContent.trim();
+      const smallText = chip.querySelector('small')?.textContent || '';
+      spans[0].outerHTML = renderAvatarHtml(personName, smallText, 'sm');
+    }
+  });
+};
+
+// Sinkronisasi Mobile Quick-Access Strip dengan fungsi jump()
+$$('#mobileQuickStrip [data-mq-page]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    jump(btn.dataset.mqPage);
+  });
+});
+
+const _prevJumpV72 = jump;
+jump = function(page){
+  _prevJumpV72(page);
+  $$('#mobileQuickStrip [data-mq-page]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mqPage === page);
+  });
+};
+
+setTimeout(() => {
+  syncHeaderAndModalProfileUI();
+  renderLiveCohortLeaderboard();
+  renderPsychometricModule();
+}, 120);
 
 const _params = new URLSearchParams(window.location.search);
 if(_params.get('demo') === '1' || _params.get('judge') === '1'){
