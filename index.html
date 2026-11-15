@@ -28,7 +28,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-.card{overflow-wrap:break-word;word-wrap:break-word;word-break:break-word}
+.card{word-break:normal;overflow-wrap:normal}
 input,select,textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-overflow:ellipsis}
 @media(max-width:1180px){
   .g2,.g3{grid-template-columns:minmax(0,1fr)!important}
@@ -661,7 +661,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-.card{overflow-wrap:break-word;word-wrap:break-word;word-break:break-word}
+.card{word-break:normal;overflow-wrap:normal}
 input,select,textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-overflow:ellipsis}
 @media(max-width:1180px){
   .g2,.g3{grid-template-columns:minmax(0,1fr)!important}
@@ -728,7 +728,7 @@ input,select,textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-bo
 *,*::before,*::after{box-sizing:border-box}
 html,body{max-width:100%;overflow-x:hidden}
 .app,.main,.page,.grid,.card{min-width:0!important;max-width:100%!important}
-.card{overflow:hidden;overflow-wrap:anywhere;word-break:break-word}
+.card{overflow:hidden;word-break:normal;overflow-wrap:normal}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))!important}
@@ -862,6 +862,70 @@ html,body{max-width:100%;overflow-x:hidden}
 .profile-chip-btn:hover{border-color:var(--am)}
 @media(max-width:900px){
   .profile-chip-btn{display:inline-flex!important;padding:4px 10px 4px 5px;font-size:11px}
+}
+
+
+/* ===== V7.3 MOBILE TYPOGRAPHY, FLEX WRAP, & STACKED KHS CARDS FIX ===== */
+h1,h2,h3,h4,h5,h6,.title,.kicker,strong,b,th,td,label,button,span,p,div{
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  hyphens:none!important;
+}
+a{overflow-wrap:anywhere}
+#todayActiveCounterPill{
+  display:inline-block;
+  max-width:100%;
+  white-space:normal!important;
+  line-height:1.35;
+}
+@media(max-width:820px){
+  .siakad-table thead{
+    display:none!important;
+  }
+  .siakad-table,.siakad-table tbody,.siakad-table tr,.siakad-table td{
+    display:block!important;
+    width:100%!important;
+  }
+  .siakad-table tr{
+    border:1px solid var(--line)!important;
+    border-radius:16px!important;
+    padding:12px 14px!important;
+    margin-bottom:12px!important;
+    background:#faf8fc!important;
+  }
+  .siakad-table td{
+    display:flex!important;
+    justify-content:space-between!important;
+    align-items:flex-start!important;
+    gap:12px!important;
+    padding:7px 0!important;
+    border-bottom:1px dashed #e5e0ec!important;
+    white-space:normal!important;
+    text-align:right!important;
+  }
+  .siakad-table td:nth-child(2){
+    display:block!important;
+    text-align:left!important;
+    padding:8px 0!important;
+  }
+  .siakad-table td:last-child{
+    border-bottom:0!important;
+    padding-bottom:2px!important;
+  }
+  .siakad-table td::before{
+    content:attr(data-label);
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    text-align:left;
+    flex:0 0 auto;
+  }
+  .siakad-table td:nth-child(2)::before{
+    display:block;
+    margin-bottom:4px;
+  }
 }
 
 </style>
@@ -1001,7 +1065,7 @@ html,body{max-width:100%;overflow-x:hidden}
         
         <div id="homePretestGateBanner" class="card" style="border:2px solid var(--am);background:linear-gradient(135deg,#f8f5ff,#ffffff);">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-            <div style="min-width:0;flex:1;">
+            <div style="flex:1 1 240px;min-width:min(100%,240px);">
               <div class="kicker" style="color:var(--am-dark);">Kapsul Refleksi Perjalanan Duta</div>
               <div class="title" style="margin:2px 0 6px;" id="homeAssessmentGateTitle">Mulai Langkah Awal: Cermin Diri &amp; Kapsul Perjalanan</div>
               <p style="font-size:12.5px;color:var(--muted);margin:0;line-height:1.55;" id="homeAssessmentGateDesc">Kenali gaya fokus dan kebiasaan harianmu di awal perjalanan. Kapsul refleksi babak berikutnya akan terbuka secara otomatis seiring konsistensi jurnal harianmu.</p>
@@ -1017,7 +1081,7 @@ html,body{max-width:100%;overflow-x:hidden}
         <!-- KARTU KODE REFERRAL RESMI & SHARE SATU KLIK (72 BA AMA BATCH 7) -->
         <div class="card" id="baReferralQuickCard" style="background:linear-gradient(135deg,#2e1d4a,#4f3473);color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
-            <div style="min-width:0;flex:1;">
+            <div style="flex:1 1 240px;min-width:min(100%,240px);">
               <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;background:rgba(255,255,255,0.16);padding:4px 10px;border-radius:99px;display:inline-block;margin-bottom:6px;">Kode Referral Resmi Brand Ambassador</span>
               <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
                 <strong style="font-size:22px;color:#fef08a;letter-spacing:0.6px;font-family:'Poppins',sans-serif;" id="myOfficialReferralCode">AMA7DOP-DUTA</strong>
@@ -1070,7 +1134,7 @@ html,body{max-width:100%;overflow-x:hidden}
       <div class="grid" style="gap:18px;">
         <div class="card" style="background:linear-gradient(135deg,#241c2f,#4D387B);color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
-            <div style="min-width:0;flex:1;">
+            <div style="flex:1 1 240px;min-width:min(100%,240px);">
               <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;background:rgba(255,255,255,0.16);padding:4px 11px;border-radius:99px;display:inline-block;margin-bottom:8px;">Peta Perjalanan &amp; Cermin Diri Duta</span>
               <h3 style="font-size:22px;margin:0 0 6px;font-family:'Poppins',sans-serif;">Kenali Ritme &amp; Keseimbangan Dirimu</h3>
               <p style="font-size:12.5px;opacity:0.9;margin:0;line-height:1.55;">Tidak ada jawaban benar atau salah di ruang ini. Geser setiap kartu sesuai kebiasaan dan apa yang benar-benar kamu rasakan akhir-akhir ini. Setiap babak baru hanya akan terbuka ketika kamu telah melewati perjalanan harianmu.</p>
@@ -1319,10 +1383,10 @@ html,body{max-width:100%;overflow-x:hidden}
       <div class="grid g2" style="margin-bottom:18px;">
         <div class="card" style="background:linear-gradient(135deg, #382553, #4D387B);color:#fff;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:rgba(255,255,255,0.16);padding:4px 10px;border-radius:20px;">Tab 2 · SuperForm Tracker</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:rgba(255,255,255,0.16);padding:4px 10px;border-radius:20px;">Pelaporan Aktivitas Duta</span>
             <span id="trackerDivBadge" style="font-size:12px;font-weight:700;background:rgba(255,255,255,0.22);color:#fff;padding:4px 12px;border-radius:14px;">Sinkronisasi Aktif</span>
           </div>
-          <h3 style="font-size:21px;margin:0 0 8px;font-family:'Poppins',sans-serif;">Token Economy &amp; SuperForm Ambassador</h3>
+          <h3 style="font-size:21px;margin:0 0 8px;font-family:'Poppins',sans-serif;">Ruang Aktivitas &amp; Karya Duta AwareMind</h3>
           <p style="font-size:13px;opacity:0.9;margin:0 0 16px;line-height:1.55;">Satu pintu pelaporan misi wajib, tantangan mingguan, karya inisiatif, presensi sesi Zoom, dan keaktifan kelompok yang langsung memperbarui poin serta capaian kelulusanmu.</p>
           
           <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;background:rgba(0,0,0,0.24);padding:14px;border-radius:14px;text-align:center;margin-bottom:14px;">
@@ -1361,8 +1425,8 @@ html,body{max-width:100%;overflow-x:hidden}
       <!-- LIVE LEADERBOARD MULTI-PERIODE & KEAKTIFAN HARIAN DUTA -->
       <div class="card" style="margin-bottom:18px;border:1px solid #d8cef0;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-          <div style="min-width:0;flex:1;">
-            <div class="kicker" style="color:var(--am-dark);">Live Accountability &amp; Gamified Leaderboard</div>
+          <div style="flex:1 1 240px;min-width:min(100%,240px);">
+            <div class="kicker" style="color:var(--am-dark);">Keaktifan &amp; Klasemen Duta Batch 7</div>
             <div class="title" style="margin-bottom:2px;">Pantauan Keaktifan Hari Ini &amp; Peringkat Duta (Harian · Mingguan · Bulanan · Streak)</div>
             <p style="font-size:12px;color:var(--muted);margin:0;">Menampilkan siapa saja duta yang sudah mengisi Daily SoulCheck maupun Link Tracker hari ini, beserta klasemen poin dan konsistensi streak.</p>
           </div>
@@ -1759,7 +1823,7 @@ html,body{max-width:100%;overflow-x:hidden}
         <div class="card" style="background:linear-gradient(135deg, #241c2f, #4D387B);color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
             <div>
-              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;background:rgba(255,255,255,0.16);padding:4px 11px;border-radius:99px;display:inline-block;margin-bottom:8px;">Kartu Hasil Studi (KHS) · Inkubator AMA-BUDDY</span>
+              <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;background:rgba(255,255,255,0.16);padding:4px 11px;border-radius:99px;display:inline-block;margin-bottom:8px;">Kartu Hasil Studi (KHS) · Duta AwareMind</span>
               <h3 style="font-size:24px;margin:0 0 4px;font-family:'Poppins',sans-serif;" id="siakadStudentName">Duta AwareMind</h3>
               <div style="font-size:12.5px;opacity:0.85;" id="siakadStudentMeta">ID Duta: AS-BATCH7 · Divisi: Dopamine Team · Peran: Ambassador</div>
             </div>
@@ -1783,12 +1847,12 @@ html,body{max-width:100%;overflow-x:hidden}
               <span style="display:block;font-size:11px;opacity:0.8;">Batas Lulus Minimal: 65.0</span>
             </div>
             <div>
-              <div style="font-size:11px;opacity:0.78;margin-bottom:3px;">Kepatuhan EMA Harian</div>
+              <div style="font-size:11px;opacity:0.78;margin-bottom:3px;">Konsistensi Jurnal Harian</div>
               <strong style="font-size:24px;color:#93c5fd;" id="siakadEmaRatio">15 / 15 Hari</strong>
-              <span style="display:block;font-size:11px;opacity:0.8;" id="siakadEmaPct">100% Target Inisiasi Valid</span>
+              <span style="display:block;font-size:11px;opacity:0.8;" id="siakadEmaPct">Target 15 Hari Terpenuhi</span>
             </div>
             <div>
-              <div style="font-size:11px;opacity:0.78;margin-bottom:3px;">Akumulasi Token Economy</div>
+              <div style="font-size:11px;opacity:0.78;margin-bottom:3px;">Total Poin Keaktifan</div>
               <strong style="font-size:24px;color:#f9a8d4;" id="siakadTotalTokens">210 Poin</strong>
               <span style="display:block;font-size:11px;opacity:0.8;" id="siakadTierRank">Tier 3 · Gold Ambassador</span>
             </div>
@@ -1798,7 +1862,7 @@ html,body{max-width:100%;overflow-x:hidden}
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
             <div>
-              <div class="kicker">Transkrip Akademik Perilaku &amp; Portofolio</div>
+              <div class="kicker">Transkrip Capaian &amp; Portofolio Duta</div>
               <div class="title" style="margin-bottom:0;">Rincian Penilaian Komponen Kurikulum AMA Batch 7</div>
             </div>
             <div style="display:flex;gap:8px;" class="no-print">
@@ -1810,26 +1874,26 @@ html,body{max-width:100%;overflow-x:hidden}
             <table class="siakad-table">
               <thead>
                 <tr>
-                  <th>Kode MK</th>
-                  <th>Komponen Evaluasi Inkubasi</th>
-                  <th>Bobot SKS</th>
-                  <th>Target Standar</th>
-                  <th>Capaian Aktual</th>
-                  <th>Skor (0–100)</th>
-                  <th>Nilai Huruf</th>
+                  <th>Kode</th>
+                  <th>Komponen Capaian Duta</th>
+                  <th>Bobot</th>
+                  <th>Target</th>
+                  <th>Capaianmu</th>
+                  <th>Nilai</th>
+                  <th>Predikat</th>
                 </tr>
               </thead>
               <tbody id="siakadTranscriptBody"></tbody>
             </table>
           </div>
           <div style="margin-top:12px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-            <span><strong>Syarat Mutlak Kelulusan (Minimum Passing Criteria):</strong> Kepatuhan EMA &ge; 15 Hari (50% Validitas Data) DAN Nilai Akhir Komposit &ge; 65,0 (Nilai C).</span>
+            <span><strong>Syarat Kelulusan Duta:</strong> Mengisi jurnal harian minimal 15 hari dan nilai capaian akhir minimal 65,0.</span>
             <span id="siakadPassVerdict" style="font-weight:700;color:#15803d;">Status: Memenuhi Seluruh Syarat Kelulusan Resmi</span>
           </div>
         </div>
 
         <div class="card">
-          <div class="kicker">Dokumen Penghargaan Resmi (Back-up Reinforcer Token Economy)</div>
+          <div class="kicker">Dokumen Penghargaan Resmi Duta AwareMind</div>
           <div class="title">Sertifikat Kelulusan &amp; Predikat Duta AwareMind Indonesia</div>
           
           <div class="cert-frame" id="officialCertificateBox">
@@ -3757,40 +3821,40 @@ function renderSiakadView(){
   if(tbody){
     tbody.innerHTML = `
       <tr>
-        <td style="font-weight:700;color:var(--am-dark);">MK-EMA101</td>
-        <td><strong>Konsistensi Jurnal Refleksi Harian (SoulCheck &amp; Syukur)</strong><br><span style="font-size:11px;color:var(--muted);">Keaktifan menulis refleksi harian minimal 15 hari selama periode program</span></td>
-        <td>4 SKS (40%)</td>
-        <td>&ge; 15 Hari Aktif</td>
-        <td style="font-weight:700;">${rec.emaDays} Hari Terisi</td>
-        <td style="font-weight:700;">${rec.scoreEma}</td>
-        <td><span class="siakad-badge ${rec.scoreEma >= 80 ? 'magna' : 'grad'}">${letterFromScore(rec.scoreEma)}</span></td>
+        <td data-label="Kode" style="font-weight:800;color:var(--am-dark);white-space:nowrap;">AMA-101</td>
+        <td data-label="Komponen"><strong>Konsistensi Jurnal Harian (Daily SoulCheck)</strong><br><span style="font-size:11.5px;color:var(--muted);">Keaktifan mengisi refleksi dan rasa syukur harian selama periode program</span></td>
+        <td data-label="Bobot" style="white-space:nowrap;">40% (4 SKS)</td>
+        <td data-label="Target" style="white-space:nowrap;">Min. 15 Hari</td>
+        <td data-label="Capaianmu" style="font-weight:700;white-space:nowrap;">${rec.emaDays} Hari Terisi</td>
+        <td data-label="Nilai" style="font-weight:800;white-space:nowrap;">${rec.scoreEma} / 100</td>
+        <td data-label="Predikat" style="white-space:nowrap;"><span class="siakad-badge ${rec.scoreEma >= 80 ? 'magna' : 'grad'}">${letterFromScore(rec.scoreEma)}</span></td>
       </tr>
       <tr>
-        <td style="font-weight:700;color:var(--am-dark);">MK-EDU102</td>
-        <td><strong>Konversi Produktivitas Karya Psikoedukasi &amp; Misi Wajib</strong><br><span style="font-size:11px;color:var(--muted);">Publikasi konten kampanye #NoMoreBrainRot, karusel edukasi, dan tantangan mingguan</span></td>
-        <td>3 SKS (30%)</td>
-        <td>&ge; 2 Karya Valid</td>
-        <td style="font-weight:700;">${rec.karyaCount} Karya (${rec.trackerPts} Poin)</td>
-        <td style="font-weight:700;">${rec.scoreKarya}</td>
-        <td><span class="siakad-badge ${rec.scoreKarya >= 80 ? 'magna' : 'grad'}">${letterFromScore(rec.scoreKarya)}</span></td>
+        <td data-label="Kode" style="font-weight:800;color:var(--am-dark);white-space:nowrap;">AMA-102</td>
+        <td data-label="Komponen"><strong>Karya Edukasi Kreatif &amp; Misi Mingguan</strong><br><span style="font-size:11.5px;color:var(--muted);">Publikasi konten kampanye positif, karusel edukasi, dan tantangan mingguan</span></td>
+        <td data-label="Bobot" style="white-space:nowrap;">30% (3 SKS)</td>
+        <td data-label="Target" style="white-space:nowrap;">Min. 2 Karya</td>
+        <td data-label="Capaianmu" style="font-weight:700;white-space:nowrap;">${rec.karyaCount} Karya (${rec.trackerPts} Poin)</td>
+        <td data-label="Nilai" style="font-weight:800;white-space:nowrap;">${rec.scoreKarya} / 100</td>
+        <td data-label="Predikat" style="white-space:nowrap;"><span class="siakad-badge ${rec.scoreKarya >= 80 ? 'magna' : 'grad'}">${letterFromScore(rec.scoreKarya)}</span></td>
       </tr>
       <tr>
-        <td style="font-weight:700;color:var(--am-dark);">MK-SYN103</td>
-        <td><strong>Partisipasi Sesi Virtual (Masterclass/Zoom) &amp; Sinergi Tim</strong><br><span style="font-size:11px;color:var(--muted);">Keterlibatan dalam Peer-Led Scaffolding dan diskusi kelompok divisi</span></td>
-        <td>2 SKS (15%)</td>
-        <td>&ge; 1 Sesi Utama</td>
-        <td style="font-weight:700;">${rec.zoomCount} Sesi Terverifikasi</td>
-        <td style="font-weight:700;">${rec.scoreSinergi}</td>
-        <td><span class="siakad-badge magna">${letterFromScore(rec.scoreSinergi)}</span></td>
+        <td data-label="Kode" style="font-weight:800;color:var(--am-dark);white-space:nowrap;">AMA-103</td>
+        <td data-label="Komponen"><strong>Kehadiran Sesi Virtual &amp; Kolaborasi Tim Divisi</strong><br><span style="font-size:11.5px;color:var(--muted);">Keaktifan hadir pada sesi Onboarding/Masterclass dan kerja sama kelompok</span></td>
+        <td data-label="Bobot" style="white-space:nowrap;">15% (2 SKS)</td>
+        <td data-label="Target" style="white-space:nowrap;">Min. 1 Sesi</td>
+        <td data-label="Capaianmu" style="font-weight:700;white-space:nowrap;">${rec.zoomCount} Sesi Hadir</td>
+        <td data-label="Nilai" style="font-weight:800;white-space:nowrap;">${rec.scoreSinergi} / 100</td>
+        <td data-label="Predikat" style="white-space:nowrap;"><span class="siakad-badge magna">${letterFromScore(rec.scoreSinergi)}</span></td>
       </tr>
       <tr>
-        <td style="font-weight:700;color:var(--am-dark);">MK-DET104</td>
-        <td><strong>Regulasi Atensi &amp; Pemangkasan Waktu Layar Pasif</strong><br><span style="font-size:11px;color:var(--muted);">Penurunan durasi doomscrolling harian berdasarkan log Digital Wellbeing</span></td>
-        <td>1 SKS (15%)</td>
-        <td>Reduksi &ge; 1.5 Jam</td>
-        <td style="font-weight:700;">-${rec.stReduction} Jam/Hari</td>
-        <td style="font-weight:700;">${rec.scoreDetox}</td>
-        <td><span class="siakad-badge magna">${letterFromScore(rec.scoreDetox)}</span></td>
+        <td data-label="Kode" style="font-weight:800;color:var(--am-dark);white-space:nowrap;">AMA-104</td>
+        <td data-label="Komponen"><strong>Keseimbangan Waktu Layar &amp; Kebiasaan Digital</strong><br><span style="font-size:11.5px;color:var(--muted);">Pengelolaan durasi layar harian yang sehat dan produktif</span></td>
+        <td data-label="Bobot" style="white-space:nowrap;">15% (1 SKS)</td>
+        <td data-label="Target" style="white-space:nowrap;">Terkendali</td>
+        <td data-label="Capaianmu" style="font-weight:700;white-space:nowrap;">-${rec.stReduction} Jam/Hari</td>
+        <td data-label="Nilai" style="font-weight:800;white-space:nowrap;">${rec.scoreDetox} / 100</td>
+        <td data-label="Predikat" style="white-space:nowrap;"><span class="siakad-badge magna">${letterFromScore(rec.scoreDetox)}</span></td>
       </tr>
     `;
   }
@@ -5944,6 +6008,85 @@ setTimeout(() => {
   renderLiveCohortLeaderboard();
   renderPsychometricModule();
 }, 120);
+
+
+// ============================================================================
+// V7.3 FILTER AKUN PENELITI (NON-BA) AGAR TIDAK MASUK DAFTAR 72 DUTA BATCH 7
+// ============================================================================
+function isResearcherOrNonBaName(nameStr){
+  const low = String(nameStr || '').trim().toLowerCase();
+  if(!low) return true;
+  if(low.includes('fatih') || low.includes('mgs.') || low.includes('awaremind') || low.includes('admin') || low === 'teman' || low === 'duta awaremind'){
+    return true;
+  }
+  return false;
+}
+
+function getEffectiveAmbassadorName(){
+  const manualSaved = localStorage.getItem('amabuddy_selected_ba_name_v73');
+  if(manualSaved && !isResearcherOrNonBaName(manualSaved)) return manualSaved;
+
+  const inputVal = ($('#sfFullName')?.value || '').trim();
+  if(inputVal && !isResearcherOrNonBaName(inputVal)) return inputVal;
+
+  const profName = (profile?.displayName || '').trim();
+  if(profName && !isResearcherOrNonBaName(profName)) return profName;
+
+  // Default ke Duta #1 di daftar resmi Batch 7 jika yang login adalah akun peneliti/Fatih
+  return 'Nyimas Kirana Laila Amelia Putri Nurman';
+}
+
+function enforceCleanBaIdentity(){
+  const cleanBaName = getEffectiveAmbassadorName();
+  if(profile && isResearcherOrNonBaName(profile.displayName)){
+    profile.displayName = cleanBaName;
+    if(!profile.participantCode || profile.participantCode.startsWith('AS-')){
+      profile.participantCode = 'AMA7-056';
+    }
+  }
+  if($('#sfFullName') && isResearcherOrNonBaName($('#sfFullName').value)){
+    $('#sfFullName').value = cleanBaName;
+  }
+  if($('#hello')){
+    $('#hello').textContent = 'Halo, ' + cleanBaName + '.';
+  }
+}
+
+const _v72SaveProfileBtn = $('#saveProfileModalBtn');
+if(_v72SaveProfileBtn){
+  _v72SaveProfileBtn.addEventListener('click', () => {
+    const newName = ($('#profileEditFullName')?.value || '').trim();
+    if(newName && !isResearcherOrNonBaName(newName)){
+      localStorage.setItem('amabuddy_selected_ba_name_v73', newName);
+    }
+  });
+}
+
+// Pastikan getCurrentStudentProfileForSiakad & renderLiveCohortLeaderboard murni memakai 72 Duta (TIDAK menambah akun ke-73 jika bukan BA)
+const _origGetStudentSiakad = getCurrentStudentProfileForSiakad;
+getCurrentStudentProfileForSiakad = function(){
+  enforceCleanBaIdentity();
+  return _origGetStudentSiakad();
+};
+
+const _v72RenderLbBase = renderLiveCohortLeaderboard;
+renderLiveCohortLeaderboard = function(){
+  enforceCleanBaIdentity();
+  // Hapus entri non-BA jika sempat masuk ke siakadRoster
+  siakadRoster = INITIAL_BATCH7_ROSTER.filter(r => !isResearcherOrNonBaName(r.name));
+  _v72RenderLbBase();
+  // Pastikan pill counter selalu menampilkan jumlah tepat dari 72 Duta
+  const pillEl = $('#todayActiveCounterPill');
+  if(pillEl){
+    pillEl.textContent = pillEl.textContent.replace(/dari \d+ Duta/, 'dari 72 Duta');
+  }
+};
+
+setTimeout(() => {
+  enforceCleanBaIdentity();
+  renderLiveCohortLeaderboard();
+  renderSiakadView();
+}, 180);
 
 const _params = new URLSearchParams(window.location.search);
 if(_params.get('demo') === '1' || _params.get('judge') === '1'){
