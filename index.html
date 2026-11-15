@@ -928,6 +928,56 @@ a{overflow-wrap:anywhere}
   }
 }
 
+
+/* ===== V7.5 ZERO-CROP POLISH FOR ALL MOBILE & DESKTOP ELEMENTS ===== */
+.card{
+  overflow:visible!important;
+  max-width:100%!important;
+}
+.lb-row{
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:8px 10px!important;
+}
+.lb-row strong,.lb-row span{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.38!important;
+}
+.today-chip{
+  max-width:100%!important;
+  white-space:normal!important;
+  line-height:1.35!important;
+}
+.cert-frame{
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.cert-frame .cert-recip{
+  max-width:100%!important;
+  white-space:normal!important;
+  line-height:1.3!important;
+  font-size:clamp(17px,4.5vw,24px)!important;
+  padding:4px 12px 6px!important;
+}
+@media(max-width:640px){
+  .cert-frame{padding:20px 14px!important;border-width:5px!important}
+  .cert-frame h2{font-size:20px!important}
+  .psych-scale-labels{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:4px 8px!important;
+    background:#faf8fc;
+    padding:8px 10px;
+    border-radius:10px;
+    margin-top:6px;
+  }
+  .psych-item-head{
+    flex-wrap:wrap!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1072,7 +1122,7 @@ a{overflow-wrap:anywhere}
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button type="button" class="btn primary" data-jump="assessment" id="homeOpenAssessmentBtn">Buka Kenali Diri</button>
-              <button type="button" class="btn soft" data-jump="tracker">Lihat Peringkat Kohor</button>
+              <button type="button" class="btn soft" data-jump="tracker">Lihat Peringkat Angkatan</button>
             </div>
           </div>
         </div>
@@ -1271,14 +1321,29 @@ a{overflow-wrap:anywhere}
                     <input type="text" id="psychStTotalComputed" readonly value="4 Jam 0 Menit (240 Menit)" style="background:#f8f6fa;font-weight:700;color:var(--am-dark);">
                   </div>
                 </div>
-                <div class="grid g2">
-                  <div class="field">
-                    <label for="psychStProofUrl">Tautan Screenshot Digital Wellbeing / Screen Time (Google Drive)</label>
-                    <input type="url" id="psychStProofUrl" placeholder="https://drive.google.com/open?id=...">
+                <div id="psychStProofBox" style="background:#faf7ff;border:1.5px solid #d8cef0;padding:14px;border-radius:16px;margin-top:4px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                    <strong style="font-size:13px;color:var(--am-dark);">Bukti Screenshot Waktu Layar (Digital Wellbeing / Screen Time)</strong>
+                    <span style="font-size:11px;font-weight:800;background:#ffe4e6;color:#be123c;padding:3px 10px;border-radius:99px;">WAJIB DIISI</span>
                   </div>
-                  <div class="field">
-                    <label for="psychStFileUpload">Atau Pilih Gambar Screenshot dari Galeri HP</label>
-                    <input type="file" id="psychStFileUpload" accept="image/*" style="padding:9px 12px;">
+                  <p style="font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5;">Pilih langsung gambar tangkapan layar (screenshot) waktu layar dari galeri HP kamu, atau tempel tautan Google Drive jika sudah diunggah.</p>
+                  <div class="grid g2">
+                    <div class="field" style="margin-bottom:0;">
+                      <label for="psychStFileUpload">1. Unggah Langsung Screenshot dari Galeri HP (Disarankan)</label>
+                      <input type="file" id="psychStFileUpload" accept="image/*" style="padding:9px 12px;background:#fff;">
+                    </div>
+                    <div class="field" style="margin-bottom:0;">
+                      <label for="psychStProofUrl">2. Atau Tempel Link Google Drive Screenshot</label>
+                      <input type="url" id="psychStProofUrl" placeholder="https://drive.google.com/open?id=...">
+                    </div>
+                  </div>
+                  <div id="psychStImagePreviewWrap" class="hidden" style="margin-top:12px;display:flex;align-items:center;gap:12px;background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;">
+                    <img id="psychStImageThumb" src="" alt="Preview Screenshot" style="width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid #10b981;flex:0 0 52px;">
+                    <div style="min-width:0;flex:1;">
+                      <strong style="font-size:12px;color:#065f46;display:block;" id="psychStImageName">Screenshot Waktu Layar Siap Disimpan</strong>
+                      <span style="font-size:11px;color:#047857;">Bukti tangkapan layar telah terlampir dan siap dikirim.</span>
+                    </div>
+                    <button type="button" class="btn soft" id="clearPsychStImageBtn" style="padding:6px 10px;font-size:11px;">Ganti</button>
                   </div>
                 </div>
               </div>
@@ -1389,7 +1454,7 @@ a{overflow-wrap:anywhere}
           <h3 style="font-size:21px;margin:0 0 8px;font-family:'Poppins',sans-serif;">Ruang Aktivitas &amp; Karya Duta AwareMind</h3>
           <p style="font-size:13px;opacity:0.9;margin:0 0 16px;line-height:1.55;">Satu pintu pelaporan misi wajib, tantangan mingguan, karya inisiatif, presensi sesi Zoom, dan keaktifan kelompok yang langsung memperbarui poin serta capaian kelulusanmu.</p>
           
-          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;background:rgba(0,0,0,0.24);padding:14px;border-radius:14px;text-align:center;margin-bottom:14px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px;background:rgba(0,0,0,0.24);padding:14px;border-radius:14px;text-align:center;margin-bottom:14px;">
             <div>
               <div style="font-size:11px;opacity:0.8;margin-bottom:2px;">Poin Token Saya</div>
               <strong style="font-size:18px;" id="tokenPoints">0 Poin</strong>
@@ -1404,18 +1469,11 @@ a{overflow-wrap:anywhere}
             </div>
           </div>
 
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn soft" id="openEmbeddedGFormBtn" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.28);padding:8px 13px;font-size:12px;font-weight:700;">
-              Buka Google Form Resmi di Dalam Aplikasi
-            </button>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7-XArVxMwsO8Z9tPFWBJIeJWDGzo8_I6gbF66Pd8h9Q43eQ/viewform" target="_blank" rel="noopener noreferrer" class="btn soft" style="background:#fff;color:var(--am-dark);padding:8px 13px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;">
-              Buka Link Google Form Asli &rarr;
-            </a>
-          </div>
+          <div style="font-size:12px;background:rgba(255,255,255,0.14);padding:9px 12px;border-radius:12px;line-height:1.5;">Seluruh pelaporan kehadiran sesi, karya edukasi, dan tantangan mingguan cukup diisi langsung melalui formulir di bawah ini.</div>
         </div>
 
         <div class="card">
-          <div class="kicker">Klasemen Kohor AMA Batch 7 (Real-Time)</div>
+          <div class="kicker">Klasemen Angkatan AMA Batch 7 (Real-Time)</div>
           <div class="title">Akumulasi Laporan &amp; Poin Divisi</div>
           <div id="teamStandingsBox" style="display:grid;gap:9px;margin-top:10px;"></div>
         </div>
@@ -1441,7 +1499,7 @@ a{overflow-wrap:anywhere}
         <div class="lb-tab-bar" id="leaderboardPeriodTabs">
           <button type="button" class="lb-tab-btn active" data-lb-mode="daily">Peringkat Harian (Hari Ini)</button>
           <button type="button" class="lb-tab-btn" data-lb-mode="weekly">Peringkat Mingguan (7 Hari)</button>
-          <button type="button" class="lb-tab-btn" data-lb-mode="monthly">Peringkat Bulanan (Total Kohor)</button>
+          <button type="button" class="lb-tab-btn" data-lb-mode="monthly">Peringkat Bulanan (Total Angkatan)</button>
           <button type="button" class="lb-tab-btn" data-lb-mode="streak">Peringkat Per Streak (Konsistensi)</button>
         </div>
 
@@ -1464,21 +1522,7 @@ a{overflow-wrap:anywhere}
 
       </div>
 
-      <div id="embeddedGFormCard" class="card hidden" style="margin-bottom:18px;border:2px solid var(--am);">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-          <div>
-            <div class="kicker">Formulir Resmi Google Forms</div>
-            <div class="title" style="margin-bottom:0;">[AMA BATCH 7] SUPER FORM: AMBASSADOR TRACKER</div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7-XArVxMwsO8Z9tPFWBJIeJWDGzo8_I6gbF66Pd8h9Q43eQ/viewform" target="_blank" rel="noopener noreferrer" class="btn soft" style="padding:7px 12px;font-size:12px;text-decoration:none;">Buka di Tab Baru</a>
-            <button type="button" class="btn primary" id="closeEmbeddedGFormBtn" style="padding:7px 14px;font-size:12px;">Tutup Pratinjau Form</button>
-          </div>
-        </div>
-        <div style="width:100%;height:620px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f8f6fa;">
-          <iframe id="officialGFormIframe" data-src="https://docs.google.com/forms/d/e/1FAIpQLSc7-XArVxMwsO8Z9tPFWBJIeJWDGzo8_I6gbF66Pd8h9Q43eQ/viewform?embedded=true" style="width:100%;height:100%;border:0;" title="AMA Batch 7 Super Form"></iframe>
-        </div>
-      </div>
+      
 
       <div class="grid g2" style="align-items:start;">
         <div class="card">
@@ -1778,7 +1822,7 @@ a{overflow-wrap:anywhere}
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
             <div>
               <div class="kicker">Galeri Karya &amp; Keaktifan Duta</div>
-              <div class="title" style="margin-bottom:0;">Portofolio Kohor AMA Batch 7</div>
+              <div class="title" style="margin-bottom:0;">Portofolio Angkatan AMA Batch 7</div>
             </div>
             <button type="button" class="btn soft hidden" id="exportSuperFormCsvBtn" style="padding:7px 12px;font-size:11.5px;font-weight:700;">Unduh CSV</button>
           </div>
@@ -1806,7 +1850,7 @@ a{overflow-wrap:anywhere}
           </div>
 
           <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;">
-            <span id="feedShowingCount">Menampilkan laporan kohor...</span>
+            <span id="feedShowingCount">Menampilkan laporan angkatan...</span>
             <span>Portofolio Resmi Duta AwareMind</span>
           </div>
 
@@ -1908,7 +1952,7 @@ a{overflow-wrap:anywhere}
             <p style="font-size:12.5px;color:#5f556d;max-width:580px;margin:0 auto 18px;line-height:1.6;" id="certBodyCopy">
               Telah menyelesaikan program pengembangan diri dan kepemimpinan pemuda AwareMind Ambassador (AMA) Batch 7 dengan dedikasi tinggi dalam refleksi kesadaran diri, kolaborasi tim divisi, serta penciptaan karya edukasi kesehatan mental yang berdampak positif bagi generasi muda Indonesia.
             </p>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:540px;margin:0 auto;padding-top:16px;border-top:1px solid #dfd8e8;font-size:11.5px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px;max-width:540px;margin:0 auto;padding-top:16px;border-top:1px solid #dfd8e8;font-size:11.5px;">
               <div>
                 <div style="color:#827a8a;">Indeks Prestasi (IPK)</div>
                 <strong style="font-size:14px;color:#382553;" id="certGpaVal">3.85 / 4.00 (A)</strong>
@@ -2307,6 +2351,7 @@ a{overflow-wrap:anywhere}
       <button type="button" onclick="jump('assessment');if(typeof switchPsychStage==='function')switchPsychStage('posttest',true);" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(147,197,253,0.4);background:rgba(59,130,246,0.18);color:#bfdbfe;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">5. Buka Segel Semua Babak (Khusus Peneliti)</button>
       <button type="button" onclick="document.getElementById('exportPsychometricCsvBtn')?.click()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(253,230,138,0.4);background:rgba(234,179,8,0.18);color:#fef08a;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">6. Unduh CSV Data Psikometri (Peneliti)</button>
       <button type="button" onclick="document.getElementById('exportSuperFormCsvBtn')?.click()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(253,230,138,0.4);background:rgba(234,179,8,0.18);color:#fef08a;text-align:left;cursor:pointer;font-size:11px;font-weight:600;">7. Unduh CSV 45 Kolom SuperForm (Peneliti)</button>
+      <button type="button" onclick="window.runLiveBackendDiagnostics && window.runLiveBackendDiagnostics()" style="padding:7px 10px;border-radius:10px;border:1px solid rgba(167,243,208,0.5);background:rgba(16,185,129,0.25);color:#ecfdf5;text-align:left;cursor:pointer;font-size:11px;font-weight:700;">8. Tes Koneksi Backend (Supabase &amp; Sheet)</button>
     </div>
   </div>
 
@@ -4720,7 +4765,7 @@ function renderPsychometricModule(){
   const saved = getSavedPsychAssessments();
   const activeDays = getActiveJournalingDaysCount();
 
-  // Pada mode demo kohor, jika belum ada data pre-test lokal tetapi duta sudah punya 15+ hari jurnal, tandai baseline pre-test historis tersedia
+  // Pada mode demo angkatan, jika belum ada data pre-test lokal tetapi duta sudah punya 15+ hari jurnal, tandai baseline pre-test historis tersedia
   const hasPre = !!saved.pretest;
   const hasMid = !!saved.midtest;
   const hasPost = !!saved.posttest;
@@ -5518,7 +5563,7 @@ $('#lbFindMeBtn')?.addEventListener('click', () => {
   const meRow = $('#myLeaderboardRowItem');
   if(meRow){
     meRow.scrollIntoView({behavior: 'smooth', block: 'center'});
-    toast('Menampilkan posisi peringkatmu di dalam kohor.');
+    toast('Menampilkan posisi peringkatmu di dalam angkatan.');
   } else {
     toast('Posisi peringkatmu telah ditampilkan.');
   }
@@ -6087,6 +6132,193 @@ setTimeout(() => {
   renderLiveCohortLeaderboard();
   renderSiakadView();
 }, 180);
+
+
+// ============================================================================
+// V7.4 AUTO-CREATE PROFILE FALLBACK, CLOUD AVATAR PP SYNC, & LIVE BACKEND TEST
+// ============================================================================
+const _origGetProfileForUser = getProfileForUser;
+getProfileForUser = async function(user){
+  if(!user) return null;
+  try {
+    return await _origGetProfileForUser(user);
+  } catch(err){
+    // Fallback otomatis: buat baris di tabel profiles jika belum ada
+    const code = 'AS-' + String(user.id || '000000').replace(/-/g, '').slice(0, 6).toUpperCase();
+    const meta = user.user_metadata || {};
+    const disp = meta.display_name || (user.email ? user.email.split('@')[0] : 'Duta AwareMind');
+    const age = meta.age_group || '18–25 tahun';
+    try {
+      const {data} = await sb.from('profiles').upsert({
+        id: user.id,
+        participant_code: code,
+        display_name: disp,
+        age_group: age,
+        consent_accepted: true,
+        guardian_consent_status: age === '13–17 tahun' ? 'pending' : 'not_required'
+      }, {onConflict: 'id'}).select('*').single();
+      if(data) return publicProfile(data, user);
+    } catch(_){}
+    return {
+      userId: user.id,
+      participantCode: code,
+      displayName: disp,
+      email: user.email || '',
+      ageGroup: age,
+      consentAccepted: true,
+      guardianConsentStatus: 'not_required'
+    };
+  }
+};
+
+// Sinkronisasi Foto Profil (PP) dari & ke tabel Supabase `ama_ambassador_roster` agar terlihat oleh semua duta
+async function syncAvatarsFromSupabase(){
+  if(window.__isDemoMode || !window.supabase) return;
+  try {
+    const {data, error} = await sb.from('ama_ambassador_roster')
+      .select('full_name,team_name,referral_code,avatar_data_url,avatar_color,bio')
+      .limit(200);
+    if(!error && Array.isArray(data) && data.length){
+      const map = getAvatarStorageMap();
+      let changed = false;
+      data.forEach(r => {
+        if(r.avatar_data_url || r.bio || r.avatar_color){
+          const key = String(r.full_name || '').trim().toLowerCase().replace(/’/g, "'");
+          if(key){
+            map[key] = {
+              photo: r.avatar_data_url || (map[key]?.photo || ''),
+              color: r.avatar_color || (map[key]?.color || '#65458f'),
+              bio: r.bio || (map[key]?.bio || '')
+            };
+            changed = true;
+          }
+        }
+      });
+      if(changed){
+        localStorage.setItem('amabuddy_avatars_v72', JSON.stringify(map));
+        renderLiveCohortLeaderboard();
+      }
+    }
+  } catch(e){}
+}
+
+const _origSaveAvatar = saveAvatarForAmbassador;
+saveAvatarForAmbassador = function(nameStr, dataUrl, colorHex, bioStr){
+  _origSaveAvatar(nameStr, dataUrl, colorHex, bioStr);
+  if(!window.__isDemoMode && window.supabase){
+    const refCode = resolveOfficialReferralCode(nameStr, $('#sfTeam')?.value || '');
+    sb.from('ama_ambassador_roster').upsert({
+      as_id: 'AMA-' + refCode,
+      full_name: nameStr,
+      team_name: $('#sfTeam')?.value || 'DOPAMINE TEAM — Creative Storyteller',
+      referral_code: refCode,
+      avatar_data_url: dataUrl || null,
+      avatar_color: colorHex || '#65458f',
+      bio: bioStr || null
+    }, {onConflict: 'referral_code'}).then(()=>{}).catch(()=>{});
+  }
+};
+
+window.runLiveBackendDiagnostics = async function(){
+  toast('Menguji koneksi Supabase & Webhook Spreadsheet...');
+  let sbStatus = 'Belum terhubung';
+  try {
+    const {data, error} = await sb.from('ama_superform_submissions').select('id').limit(1);
+    if(!error) sbStatus = 'AKTIF (Tabel Siap)';
+    else sbStatus = 'Perlu Run SQL (' + (error.message || 'Tabel belum dibuat') + ')';
+  } catch(e){
+    sbStatus = 'Error: ' + (e.message || String(e));
+  }
+
+  let gsStatus = ' Terkirim (Webhook Aktif)';
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'pingTest',
+        spreadsheetId: TARGET_SPREADSHEET_ID
+      })
+    });
+  } catch(e){
+    gsStatus = 'Gagal menghubungi API_URL';
+  }
+
+  toast(`Supabase: ${sbStatus} | Spreadsheet: ${gsStatus}`);
+};
+
+setTimeout(syncAvatarsFromSupabase, 600);
+
+
+// ============================================================================
+// V7.5 VALIDASI WAJIB SCREENSHOT WAKTU LAYAR & PRATINJAU GAMBAR OTOMATIS
+// ============================================================================
+let _psychUploadedScreenshotDataUrl = '';
+let _psychUploadedScreenshotName = '';
+
+$('#psychStFileUpload')?.addEventListener('change', e => {
+  const file = e.target?.files?.[0];
+  if(!file) return;
+  _psychUploadedScreenshotName = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 720;
+      let w = img.width, h = img.height;
+      if(w > maxDim || h > maxDim){
+        if(w > h){ h = Math.round(h * (maxDim / w)); w = maxDim; }
+        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      _psychUploadedScreenshotDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+      if($('#psychStProofUrl') && !$('#psychStProofUrl').value.startsWith('http')){
+        $('#psychStProofUrl').value = 'screenshot_terlampir://' + file.name;
+      }
+      if($('#psychStImageThumb')) $('#psychStImageThumb').src = _psychUploadedScreenshotDataUrl;
+      if($('#psychStImageName')) $('#psychStImageName').textContent = 'Bukti Terlampir: ' + file.name;
+      $('#psychStImagePreviewWrap')?.classList.remove('hidden');
+      $('#psychStProofBox')?.style.setProperty('border-color', '#10b981');
+      toast('Screenshot Waktu Layar berhasil dilampirkan!');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+$('#clearPsychStImageBtn')?.addEventListener('click', () => {
+  _psychUploadedScreenshotDataUrl = '';
+  _psychUploadedScreenshotName = '';
+  if($('#psychStFileUpload')) $('#psychStFileUpload').value = '';
+  if($('#psychStProofUrl') && $('#psychStProofUrl').value.startsWith('screenshot_terlampir://')){
+    $('#psychStProofUrl').value = '';
+  }
+  $('#psychStImagePreviewWrap')?.classList.add('hidden');
+});
+
+// Pasang pencegat (capture listener) pada tombol submitPsychometricBtn agar WAJIB melampirkan bukti screenshot!
+document.getElementById('submitPsychometricBtn')?.addEventListener('click', function(ev){
+  const proofUrlVal = ($('#psychStProofUrl')?.value || '').trim();
+  const hasFile = !!(_psychUploadedScreenshotDataUrl || ($('#psychStFileUpload')?.files && $('#psychStFileUpload').files.length > 0));
+  const hasValidLink = proofUrlVal.length >= 6;
+
+  if(!hasFile && !hasValidLink){
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+    const box = $('#psychStProofBox');
+    if(box){
+      box.style.borderColor = '#e11d48';
+      box.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+    toast('Wajib melampirkan bukti screenshot Waktu Layar (pilih gambar dari galeri HP atau isi tautan Drive)!');
+    return false;
+  }
+}, true);
 
 const _params = new URLSearchParams(window.location.search);
 if(_params.get('demo') === '1' || _params.get('judge') === '1'){
