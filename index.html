@@ -3112,6 +3112,9 @@ async function handleAuth(event){
     if(authMode === 'register'){
       safeStorageSet(LAST_EMAIL_KEY, email);
       activateFreshAccountSession(email, regNameVal, regAgeVal, true);
+      if(errMsg.includes('api key') || errMsg.includes('jwt') || errMsg.includes('401')){
+        toast('Peringatan: SUPABASE_PUBLISHABLE_KEY belum cocok dengan proyek ama buddy! Data tersimpan lokal.');
+      }
       return;
     }
     const localAccs = getLocalRegisteredAccounts();
