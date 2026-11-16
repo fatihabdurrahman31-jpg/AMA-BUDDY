@@ -2490,9 +2490,9 @@ a{overflow-wrap:anywhere}
 // ===============================================================
 // INTEGRATION CONFIG — Supabase untuk AwareSoul, GS untuk HealMind
 // ===============================================================
-const SUPABASE_URL = 'https://hcxcvenlpnyvyyywmcvn.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tex17xb4NFKy0EbrN8hgAw_8sW2ZbYQ';
-const API_URL = 'https://script.google.com/macros/s/AKfycbygao8NIG0fBhWaEEO6poM-Ry2lBQTQ634mWeY-DjyzbT9GBBoAJReoxia7rMfv4v4y/exec';
+const SUPABASE_URL = 'https://aosujzlkcfafzolwmxxn.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_a8uVSv4yWoGZi9dUZQL1-w_WfTdl5Hj';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyQn8QmC9zeIKgJrOKUTNYDtM4HO86Bfb5DpfzOZRamZORC1-lcM3kl2HyIGa8AHsa-EQ/exec';
 const HEALMIND_URL = 'https://healmind-ivory.vercel.app/';
 const AWARESOUL_PRODUCTION_URL = 'https://aresoul.vercel.app/';
 
@@ -2937,6 +2937,7 @@ function saveLocalRegisteredAccount(email, accountObj){
 
 function activateFreshAccountSession(email, customDisplayName, customAgeGroup, isNewRegistration=false){
   window.__isDemoMode = true;
+  window.__isJudgeDemoOnly = false;
   finishAuthBoot();
   setAuthBusy(false);
 
@@ -3268,6 +3269,7 @@ async function enterApp(){
 }
 function logoutLocal(){
   window.__isDemoMode=false;
+  window.__isJudgeDemoOnly=false;
   window.__demoRows=[];
   token='';
   profile=null;
@@ -4257,7 +4259,7 @@ function renderSiakadView(){
 }
 
 async function syncSuperFormFromSupabase(){
-  if(!window.__isDemoMode && window.supabase){
+  if(!window.__isJudgeDemoOnly && window.supabase){
     try {
       const {data, error} = await sb.from('ama_superform_submissions')
         .select('*')
@@ -4571,7 +4573,7 @@ $('#submitSuperFormBtn')?.addEventListener('click', async () => {
   } catch(e){}
 
   // 1. Simpan ke Supabase (Tabel ama_superform_submissions)
-  if(!window.__isDemoMode && window.supabase){
+  if(!window.__isJudgeDemoOnly && window.supabase){
     try {
       await sb.from('ama_superform_submissions').insert({
         user_id: profile?.userId || null,
@@ -4684,6 +4686,7 @@ $('#journeyModal')?.addEventListener('click', e => { if(e.target.id === 'journey
 
 function activateSimulationSession(customEmail=''){
   window.__isDemoMode = true;
+  window.__isJudgeDemoOnly = true;
   finishAuthBoot();
   setAuthBusy(false);
 
@@ -5255,7 +5258,7 @@ $('#submitPsychometricBtn')?.addEventListener('click', async () => {
   }
 
   // 1. Simpan ke Supabase (Tabel psychometric_assessments)
-  if(!window.__isDemoMode && window.supabase){
+  if(!window.__isJudgeDemoOnly && window.supabase){
     try {
       await sb.from('psychometric_assessments').insert({
         user_id: record.user_id,
@@ -6555,7 +6558,7 @@ async function syncAvatarsFromSupabase(){
 const _origSaveAvatar = saveAvatarForAmbassador;
 saveAvatarForAmbassador = function(nameStr, dataUrl, colorHex, bioStr){
   _origSaveAvatar(nameStr, dataUrl, colorHex, bioStr);
-  if(!window.__isDemoMode && window.supabase){
+  if(!window.__isJudgeDemoOnly && window.supabase){
     const refCode = resolveOfficialReferralCode(nameStr, $('#sfTeam')?.value || '');
     sb.from('ama_ambassador_roster').upsert({
       as_id: 'AMA-' + refCode,
