@@ -2709,6 +2709,17 @@ async function hydrateFromSession(session){
 }
 
 
+
+async function getSafeSupabaseUserId(){
+  try {
+    const {data} = await sb.auth.getUser();
+    if(data && data.user && data.user.id) return data.user.id;
+  } catch(e){}
+  const pid = String(profile?.userId || "");
+  if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pid)) return pid;
+  return null;
+}
+
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
 function today(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -4575,15 +4586,17 @@ $('#submitSuperFormBtn')?.addEventListener('click', async () => {
     localStorage.setItem('amabuddy_superform_custom_v7', JSON.stringify(arr.slice(0, 100)));
   } catch(e){}
 
-  // 1. Simpan ke Supabase (Tabel ama_superform_submissions)
-  if(!window.__isJudgeDemoOnly && window.supabase){
+  // 1. Simpan ke Supabase (Tabel ama_superform_submissions) — aman untuk semua akun termasuk akun demo!
+  if(window.supabase){
     try {
-      await sb.from('ama_superform_submissions').insert({
-        user_id: profile?.userId || null,
+      const safeUid = await getSafeSupabaseUserId();
+      const {error: sfErr} = await sb.from('ama_superform_submissions').insert({
+        user_id: safeUid,
         submitted_at_raw: nowStr,
         team_name: team,
         full_name: fullName,
         position_role: role,
+        referral_code: (typeof populateBatch7AutocompleteAndReferral === 'function' ? populateBatch7AutocompleteAndReferral().refCode : null),
         report_category: reportCategory,
         activity_title: activityTitle,
         proof_link: proofLink || null,
@@ -4594,7 +4607,8 @@ $('#submitSuperFormBtn')?.addEventListener('click', async () => {
         points_awarded: pointsAwarded,
         extra_meta: extraMeta
       });
-    } catch(e){}
+      if(sfErr) toast('Info Supabase: ' + (sfErr.message || 'Gagal simpan ke tabel SuperForm'));
+    } catch(e){ console.warn('SF Supabase error:', e); }
   }
 
   // 2. Kirim baris 45 kolom ke Google Spreadsheet [AMA BATCH 7] SUPER FORM (ID: 1mi0eDLMDjH2K2w2bUruyTdQ2xraLINkwhK5k4qvr4kM)
@@ -5260,14 +5274,16 @@ $('#submitPsychometricBtn')?.addEventListener('click', async () => {
     if(currentPsychStage === 'posttest') foundRoster.screen_time_post = record.screentime_decimal_hours;
   }
 
-  // 1. Simpan ke Supabase (Tabel psychometric_assessments)
-  if(!window.__isJudgeDemoOnly && window.supabase){
+  // 1. Simpan ke Supabase (Tabel psychometric_assessments) — aman untuk akun demo & akun baru!
+  if(window.supabase){
     try {
-      await sb.from('psychometric_assessments').insert({
-        user_id: record.user_id,
+      const safeUid = await getSafeSupabaseUserId();
+      const {error: pErr} = await sb.from('psychometric_assessments').upsert({
+        user_id: safeUid,
         as_id: record.as_id,
         full_name: record.full_name,
         team_name: record.team_name,
+        referral_code: (typeof populateBatch7AutocompleteAndReferral === 'function' ? populateBatch7AutocompleteAndReferral().refCode : null),
         assessment_type: record.assessment_type,
         item_responses: record.itemResponses,
         score_maps15: record.score_maps15,
@@ -5282,8 +5298,9 @@ $('#submitPsychometricBtn')?.addEventListener('click', async () => {
         screentime_proof_url: record.screentime_proof_url || null,
         score_sus: record.score_sus,
         dwell_time_seconds: record.dwell_time_seconds
-      });
-    } catch(e){}
+      }, {onConflict: 'as_id,assessment_type'});
+      if(pErr) toast('Info Supabase: ' + (pErr.message || 'Gagal simpan ke tabel asesmen'));
+    } catch(e){ console.warn('Psych Supabase error:', e); }
   }
 
   // 2. Sinkronkan ke Google Spreadsheet (Tab Pre_Post_Test & Rekap) via Apps Script Webhook
