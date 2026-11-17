@@ -1667,7 +1667,9 @@ a{overflow-wrap:anywhere}
                 <option value="Masterclass &amp; InspireMind Talks Vol. 2">Masterclass &amp; InspireMind Talks Vol. 2</option>
                 <option value="Grow &amp; Glow: Evaluasi &amp; Refleksi Duta">Grow &amp; Glow: Evaluasi &amp; Refleksi Duta</option>
                 <option value="Awarding &amp; Graduation Night AMA Batch 7">Awarding &amp; Graduation Night AMA Batch 7</option>
+                <option value="__CUSTOM__">✏️ Lainnya (Ketik Nama Sesi Sendiri...)</option>
               </select>
+              <input type="text" id="sfZoomSessionCustom" class="hidden" placeholder="Ketik nama sesi Zoom / event yang kamu ikuti..." style="margin-top:8px;">
             </div>
             <div class="field">
               <label for="sfZoomProof">Tautan Bukti Kehadiran (Screenshot Sesi Zoom di Google Drive)</label>
@@ -1706,7 +1708,9 @@ a{overflow-wrap:anywhere}
                 <option value="Behind The Scenes (BTS) Pembuatan Misi">Behind The Scenes (BTS) Pembuatan Misi</option>
                 <option value="Creative Journaling / Dokumentasi Refleksi Estetik">Creative Journaling / Dokumentasi Refleksi Estetik</option>
                 <option value="Twibbonize &amp; Kampanye Identitas Tim">Twibbonize &amp; Kampanye Identitas Tim</option>
+                <option value="__CUSTOM__">✏️ Lainnya (Ketik Jenis Karya Sendiri...)</option>
               </select>
+              <input type="text" id="sfInitFormatCustom" class="hidden" placeholder="Ketik jenis karya / format kontenmu sendiri..." style="margin-top:8px;">
             </div>
             <div class="field">
               <label for="sfInitLink">Tautan Postingan Hasil Karya (Instagram / TikTok / Drive)</label>
@@ -1729,7 +1733,9 @@ a{overflow-wrap:anywhere}
                 <option value="MISI WAJIB 1: Mindful Introduction &amp; Digital Detox Commitment">MISI WAJIB 1: Mindful Introduction &amp; Digital Detox Commitment</option>
                 <option value="MISI WAJIB 2: Kampanye Edukasi #NoMoreBrainRot">MISI WAJIB 2: Kampanye Edukasi #NoMoreBrainRot</option>
                 <option value="MISI WAJIB: Final Journey Carousel (22-28 November 2026) — Konten refleksi penutup tentang perjalanan dan transformasi 30 hari.">MISI WAJIB: Final Journey Carousel (Refleksi Transformasi 30 Hari)</option>
+                <option value="__CUSTOM__">✏️ Lainnya (Ketik Judul Misi Sendiri...)</option>
               </select>
+              <input type="text" id="sfMandMissionCustom" class="hidden" placeholder="Ketik nama misi wajib yang kamu kerjakan..." style="margin-top:8px;">
             </div>
             <div class="field">
               <label for="sfMandLink">Tautan Postingan Konten Misi Wajib (Reels / TikTok / Carousel)</label>
@@ -1763,7 +1769,9 @@ a{overflow-wrap:anywhere}
                 <option value="Week 2 Challenge: Mindful Morning (8-14 November 2026) — Mini Vlog A Day in My Mindful Life tanpa HP setelah bangun tidur.">Week 2 Challenge: Mindful Morning Tanpa HP Setelah Bangun Tidur</option>
                 <option value="Week 3 Challenge: Deep Work Pomodoro 45 Menit Tanpa Distraksi">Week 3 Challenge: Deep Work Pomodoro 45 Menit Tanpa Distraksi</option>
                 <option value="Bonus Fast-Task PR Media Partner — Follow/Engagement Media Partner.">Bonus Fast-Task PR Media Partner &amp; Referral</option>
+                <option value="__CUSTOM__">✏️ Lainnya (Ketik Nama Tantangan Sendiri...)</option>
               </select>
+              <input type="text" id="sfChalNameCustom" class="hidden" placeholder="Ketik nama tantangan mingguan / bonus task..." style="margin-top:8px;">
             </div>
             <div class="field">
               <label for="sfChalLink">Tautan Postingan / Bukti Dokumentasi Challenge</label>
@@ -1801,7 +1809,9 @@ a{overflow-wrap:anywhere}
                   <option value="Week 2 (14 November 2026)">Week 2</option>
                   <option value="Week 3 (21 November 2026)">Week 3</option>
                   <option value="Week 4 (28 November 2026)">Week 4</option>
+                  <option value="__CUSTOM__">✏️ Lainnya (Ketik Periode Minggu Sendiri...)</option>
                 </select>
+                <input type="text" id="sfCapWeekCustom" class="hidden" placeholder="Ketik periode minggu laporanmu (mis. Week 5)..." style="margin-top:8px;">
               </div>
               <div class="field">
                 <label for="sfCapRating">Rating Kekompakan Tim (1–5)</label>
@@ -8685,6 +8695,72 @@ async function flushLocalProfilesAndCheckinsToSupabaseTables(){
   } catch(e){}
 }
 setTimeout(flushLocalProfilesAndCheckinsToSupabaseTables, 900);
+
+
+
+// ============================================================================
+// V9.3 OPSI "KETIK SENDIRI" PADA SELURUH DROPDOWN TRACKER (ZOOM, WAJIB, DLL)
+// ============================================================================
+(function wireCustomTrackerInputs(){
+  const pairs = [
+    ['#sfZoomSession', '#sfZoomSessionCustom'],
+    ['#sfInitFormat', '#sfInitFormatCustom'],
+    ['#sfMandMission', '#sfMandMissionCustom'],
+    ['#sfChalName', '#sfChalNameCustom'],
+    ['#sfCapWeek', '#sfCapWeekCustom']
+  ];
+  pairs.forEach(([selQ, inpQ]) => {
+    const sel = $(selQ);
+    const inp = $(inpQ);
+    if(!sel || !inp) return;
+    const syncVis = () => {
+      const isCustom = sel.value === '__CUSTOM__';
+      inp.classList.toggle('hidden', !isCustom);
+      if(isCustom) inp.focus();
+    };
+    sel.addEventListener('change', syncVis);
+    syncVis();
+  });
+})();
+
+// Override helper pembaca judul saat submit agar otomatis memakai ketikan manual jika pilih __CUSTOM__
+(function upgradeTrackerCustomValueResolution(){
+  const btn = $('#submitSuperFormBtn');
+  if(!btn) return;
+  btn.addEventListener('click', (e) => {
+    // Validasi & isi nilai sementara jika user memilih __CUSTOM__ sebelum handler utama membaca
+    const pairs = [
+      ['#sfZoomSession', '#sfZoomSessionCustom', 'Ketik nama sesi Zoom terlebih dahulu!'],
+      ['#sfInitFormat', '#sfInitFormatCustom', 'Ketik jenis karya inisiatif terlebih dahulu!'],
+      ['#sfMandMission', '#sfMandMissionCustom', 'Ketik nama misi wajib terlebih dahulu!'],
+      ['#sfChalName', '#sfChalNameCustom', 'Ketik nama tantangan mingguan terlebih dahulu!'],
+      ['#sfCapWeek', '#sfCapWeekCustom', 'Ketik periode minggu terlebih dahulu!']
+    ];
+    for(const [selQ, inpQ, msg] of pairs){
+      const sel = $(selQ);
+      const inp = $(inpQ);
+      if(sel && inp && sel.value === '__CUSTOM__'){
+        const customVal = (inp.value || '').trim();
+        if(customVal.length < 3){
+          e.stopImmediatePropagation();
+          toast(msg);
+          inp.focus();
+          return false;
+        }
+        // Tambahkan opsi sementara di <select> dan pilih nilainya agar terbaca mulus oleh seluruh submit & 45-kolom sheet!
+        let opt = Array.from(sel.options).find(o => o.value === customVal);
+        if(!opt){
+          opt = document.createElement('option');
+          opt.value = customVal;
+          opt.textContent = customVal;
+          sel.appendChild(opt);
+        }
+        sel.value = customVal;
+        inp.classList.add('hidden');
+      }
+    }
+  }, true);
+})();
 
 </script>
 </body></html>
