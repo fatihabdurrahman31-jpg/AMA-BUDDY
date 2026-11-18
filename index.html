@@ -4336,10 +4336,25 @@ async function syncSuperFormFromSupabase(){
           points_awarded: Number(r.points_awarded || 10),
           extra_meta: r.extra_meta || {}
         }));
-        // Gunakan 314 baris historis yang sudah dipetakan 100% nama & timestamp-nya, ditambah kiriman baru (sheet_row_id > 314 atau null) dari Supabase
+        // Gabungkan: (1) kiriman lokal browser, (2) kiriman baru Supabase (17-18 Nov dst.), (3) baris live terbaru dari Google Spreadsheet (>314), dan (4) 314 baris rekap spreadsheet
         const newFromSb = sbMapped.filter(x => !x.sheet_row_id || Number(x.sheet_row_id) > 314);
-        const combined = newFromSb.concat(INITIAL_BATCH7_SUPERFORM.slice().reverse());
-        superformRecords = combined;
+        let localCustom = [];
+        try {
+          localCustom = JSON.parse(localStorage.getItem('amabuddy_superform_custom_v7') || '[]');
+          if(!Array.isArray(localCustom)) localCustom = [];
+        } catch(_){}
+        const liveSheetExtra = Array.isArray(window.__liveSheetExtraRows) ? window.__liveSheetExtraRows : [];
+        const allNew = [...localCustom, ...newFromSb, ...liveSheetExtra];
+        const dedupNew = [];
+        const seenNewKeys = new Set();
+        allNew.forEach(item => {
+          if(!item) return;
+          const k = `${normalizeBaStr(item.full_name)}|${String(item.report_category||'').trim().toLowerCase()}|${String(item.activity_title||'').trim().toLowerCase()}|${String(item.proof_link||'').trim().toLowerCase().split('?')[0]}`;
+          if(seenNewKeys.has(k)) return;
+          seenNewKeys.add(k);
+          dedupNew.push(item);
+        });
+        superformRecords = dedupNew.concat(INITIAL_BATCH7_SUPERFORM.slice().reverse());
       }
     } catch(e){}
   }
@@ -8498,18 +8513,20 @@ $('#authForm')?.addEventListener('submit', e => {
     try {
       if(API_URL && API_URL.startsWith('http')){
         const sheetRow45 = build45ColumnSpreadsheetRow(newRecord);
-        fetch(API_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'appendSuperFormRow',
-            spreadsheetId: TARGET_SPREADSHEET_ID,
-            sheetName: 'Form Responses 1',
-            row45: sheetRow45,
-            record: newRecord
-          })
-        }).catch(()=>{});
+        [LIVE_FORM_RESPONSE_SHEET_ID, LIVE_REKAP_POIN_SHEET_ID, TARGET_SPREADSHEET_ID].forEach(sid => {
+          fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'appendSuperFormRow',
+              spreadsheetId: sid,
+              sheetName: 'Form Responses 1',
+              row45: sheetRow45,
+              record: newRecord
+            })
+          }).catch(()=>{});
+        });
       }
     } catch(e){}
 
@@ -9231,6 +9248,215 @@ renderSiakadView = function(){
     proofCard.innerHTML = buildMyAccountProofTableHtml(matched, rec);
   }
 };
+
+
+
+// ============================================================================
+// V10.0 LIVE GOOGLE SPREADSHEET READER & TWO-WAY BRIDGE (TANPA BATAS TANGGAL 16 NOV!)
+// Otomatis membaca baris baru (17 Nov, 18 Nov, dst.) & pembaruan skor langsung dari
+// Google Spreadsheet (`10glIgKoICXm1mia5KseuQe778-Y9aGjyVYKYm-dlrEo` & `1wLKtf4GntXBpi0Xn2xbhidVO3a6yOcHiN6c7nGok-0A`)
+// sekaligus meneruskan kiriman baru dari Supabase ke Google Spreadsheet!
+// ============================================================================
+const LIVE_FORM_RESPONSE_SHEET_ID = '10glIgKoICXm1mia5KseuQe778-Y9aGjyVYKYm-dlrEo';
+const LIVE_REKAP_POIN_SHEET_ID = '1wLKtf4GntXBpi0Xn2xbhidVO3a6yOcHiN6c7nGok-0A';
+window.__liveSheetExtraRows = window.__liveSheetExtraRows || [];
+
+function fetchGoogleSheetGvizJsonp(sheetId, sheetNameOrGid, callbackFnName){
+  try {
+    const oldScript = document.getElementById('gviz_' + callbackFnName);
+    if(oldScript) oldScript.remove();
+    const s = document.createElement('script');
+    s.id = 'gviz_' + callbackFnName;
+    const isGid = /^[0-9]+$/.test(String(sheetNameOrGid));
+    const qParam = isGid ? `gid=${sheetNameOrGid}` : `sheet=${encodeURIComponent(sheetNameOrGid)}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?${qParam}&tqx=out:json;responseHandler:${callbackFnName}&t=${Date.now()}`;
+    s.async = true;
+    document.body.appendChild(s);
+  } catch(e){}
+}
+
+window.__onLiveFormResponsesGviz = function(res){
+  try {
+    if(!res || !res.table || !Array.isArray(res.table.rows)) return;
+    const rows = res.table.rows;
+    // Jika di Google Spreadsheet ada baris baru setelah baris ke-314 (misal tanggal 17 Nov, 18 Nov, dst.), langsung masukkan!
+    const extra = [];
+    for(let i = 314; i < rows.length; i++){
+      const c = rows[i]?.c || [];
+      const tsCell = c[0]?.f || c[0]?.v || '';
+      const teamRaw = String(c[1]?.v || 'DOPAMINE TEAM — Creative Storyteller');
+      const nameRaw = String(c[2]?.v || '').trim();
+      const roleRaw = String(c[3]?.v || 'Ambassador (Anggota Tim)');
+      const catRaw  = String(c[4]?.v || c[5]?.v || 'Laporan Aktivitas');
+      if(!tsCell && !nameRaw) continue;
+
+      const matched = matchOfficialBatch7Ambassador(nameRaw, '', teamRaw);
+      const finalName = matched ? matched.name : (nameRaw || 'Duta AMA Batch 7');
+      const finalTeam = matched ? matched.team : teamRaw;
+      const finalRef  = matched ? matched.referral_code : resolveOfficialReferralCode(finalName, finalTeam);
+
+      let actTitle = 'Laporan Aktivitas Duta';
+      let proofUrl = '';
+      let reflTxt  = '';
+      let pts = 10;
+      const igStory = String(c[44]?.v || '').trim();
+
+      if(catRaw.includes('Zoom')){
+        actTitle = String(c[39]?.v || 'Sesi Zoom AwareMind');
+        proofUrl = String(c[40]?.v || '');
+        reflTxt  = String(c[41]?.v || '');
+        pts = 30;
+      } else if(catRaw.includes('Misi Wajib')){
+        actTitle = String(c[6]?.v || 'Misi Wajib Individu');
+        proofUrl = String(c[7]?.v || '');
+        reflTxt  = String(c[8]?.v || '');
+        pts = 15;
+      } else if(catRaw.includes('Tantangan Mingguan')){
+        actTitle = String(c[11]?.v || 'Tantangan Mingguan');
+        proofUrl = String(c[12]?.v || '');
+        reflTxt  = String(c[14]?.v || '');
+        pts = 10;
+      } else {
+        const fmt = String(c[35]?.v || 'Extra Education');
+        const rawT = String(c[34]?.v || 'Karya Inisiatif');
+        actTitle = `[${fmt}] ${rawT}`;
+        proofUrl = String(c[36]?.v || '');
+        reflTxt  = String(c[37]?.v || '');
+        pts = 10;
+      }
+
+      extra.push({
+        row_id: i + 1,
+        sheet_row_id: i + 1,
+        submitted_at: String(tsCell),
+        team_name: finalTeam,
+        full_name: finalName,
+        position_role: roleRaw,
+        report_category: catRaw,
+        activity_title: actTitle,
+        proof_link: proofUrl,
+        reflection_text: reflTxt,
+        satisfaction_score: 5,
+        points_awarded: pts,
+        extra_meta: {
+          is_new_sheet_row: true,
+          as_id: matched ? matched.code : '',
+          referral_code: finalRef,
+          ig_story_link: igStory
+        }
+      });
+    }
+    if(extra.length > 0){
+      window.__liveSheetExtraRows = extra.reverse();
+      syncSuperFormFromSupabase();
+    }
+  } catch(e){}
+};
+
+window.__onLiveRekapPoinGviz = function(res){
+  try {
+    if(!res || !res.table || !Array.isArray(res.table.rows)) return;
+    let updatedAny = false;
+    res.table.rows.forEach(rObj => {
+      const c = rObj?.c || [];
+      const rawName = String(c[0]?.v || '').trim();
+      if(!rawName || rawName.toUpperCase() === 'NAMA LENGKAP') return;
+      const m = matchOfficialBatch7Ambassador(rawName, '');
+      if(!m) return;
+      // Baca komponen poin dari tab PERHITUNGAN POIN (dengan jaminan Zoom minimal 15 poin sesuai instruksi)
+      const zPts = Math.max(15, Number(c[2]?.v || 0));
+      const wPts = Math.max(15, Number(c[3]?.v || 15));
+      const cPts = Math.max(Number(m.base_challenge_pts || 0), Number(c[4]?.v || 0));
+      const iPts = Math.max(Number(m.base_inisiatif_pts || 0), Number(c[5]?.v || 0));
+      const rPts = Math.max(Number(m.base_referral_pts || 0), Number(c[6]?.v || 0));
+      const fPts = Math.max(Number(m.base_final_project_pts || 0), Number(c[7]?.v || 0));
+      const newTot = zPts + wPts + cPts + iPts + rPts + fPts + 40;
+      if(newTot > m.official_base_total){
+        m.base_zoom_pts = zPts;
+        m.base_wajib_pts = wPts;
+        m.base_challenge_pts = cPts;
+        m.base_inisiatif_pts = iPts;
+        m.base_referral_pts = rPts;
+        m.base_final_project_pts = fPts;
+        m.official_base_total = newTot;
+        m.tracker_points = newTot;
+        updatedAny = true;
+      }
+    });
+    if(updatedAny){
+      siakadRoster = INITIAL_BATCH7_ROSTER.map(r => ({...r}));
+      renderLiveCohortLeaderboard();
+      renderSuperFormTracker();
+      renderSiakadView();
+    }
+  } catch(e){}
+};
+
+function syncLiveFromGoogleSpreadsheets(){
+  fetchGoogleSheetGvizJsonp(LIVE_FORM_RESPONSE_SHEET_ID, '2003328913', '__onLiveFormResponsesGviz');
+  fetchGoogleSheetGvizJsonp(LIVE_REKAP_POIN_SHEET_ID, '722101537', '__onLiveRekapPoinGviz');
+}
+setTimeout(syncLiveFromGoogleSpreadsheets, 400);
+setInterval(syncLiveFromGoogleSpreadsheets, 30000);
+
+// Pastikan setiap kali Duta mengirim laporan Tracker baru di Web App (tanggal 17 Nov, 18 Nov, dst.),
+// baris 45-kolom tersebut juga dikirim ke ketiga Spreadsheet (termasuk Spreadsheet Responses `10glIgKoICXm1mia5KseuQe778-Y9aGjyVYKYm-dlrEo`)!
+async function bridgeNewSupabaseTrackerRowsToSpreadsheets(){
+  if(!window.supabase || typeof sb === 'undefined' || !API_URL) return;
+  try {
+    const {data, error} = await sb.from('ama_superform_submissions')
+      .select('*')
+      .order('created_at', {ascending: true})
+      .limit(500);
+    if(error || !Array.isArray(data)) return;
+    const newTrackerRows = data.filter(r => {
+      if(r.sheet_row_id && Number(r.sheet_row_id) <= 314) return false;
+      const meta = r.extra_meta || {};
+      if(meta.is_historical_baseline || meta.is_registration || meta.is_psychometric || meta.is_soulcheck) return false;
+      const cat = String(r.report_category || '');
+      if(cat.includes('Registrasi') || cat.includes('Asesmen Kapsul') || cat.includes('Daily SoulCheck')) return false;
+      return true;
+    });
+
+    for(const r of newTrackerRows){
+      const bKey = 'amabuddy_sf_bridged_v10_' + (r.id || (r.full_name + '_' + r.submitted_at_raw)).replace(/[^a-zA-Z0-9]/g, '_');
+      if(localStorage.getItem(bKey)) continue;
+      const recObj = {
+        row_id: r.id,
+        submitted_at: r.submitted_at_raw || (r.created_at || '').slice(0, 19).replace('T', ' '),
+        team_name: r.team_name,
+        full_name: r.full_name,
+        position_role: r.position_role || 'Ambassador (Anggota Tim)',
+        report_category: r.report_category,
+        activity_title: r.activity_title,
+        proof_link: r.proof_link || '',
+        reflection_text: r.reflection_text || '',
+        difficulty_rating: r.difficulty_rating || '',
+        satisfaction_score: r.satisfaction_score || 5,
+        points_awarded: r.points_awarded || 10,
+        extra_meta: r.extra_meta || {}
+      };
+      const row45 = typeof build45ColumnSpreadsheetRow === 'function' ? build45ColumnSpreadsheetRow(recObj) : [];
+      for(const targetSheetId of [LIVE_FORM_RESPONSE_SHEET_ID, LIVE_REKAP_POIN_SHEET_ID, TARGET_SPREADSHEET_ID]){
+        fetch(API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'appendSuperFormRow',
+            spreadsheetId: targetSheetId,
+            sheetName: 'Form Responses 1',
+            row45: row45,
+            record: recObj
+          })
+        }).catch(()=>{});
+      }
+      localStorage.setItem(bKey, '1');
+      await new Promise(res => setTimeout(res, 180));
+    }
+  } catch(e){}
+}
+setTimeout(bridgeNewSupabaseTrackerRowsToSpreadsheets, 2200);
 
 
 // V9.8 BIDIRECTIONAL PSYCHOMETRIC SYNC (PULIHKAN STATUS BABAK 1 DARI SUPABASE & LOCALSTORAGE LAMA)
