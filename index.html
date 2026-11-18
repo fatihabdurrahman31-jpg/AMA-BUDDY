@@ -1545,7 +1545,7 @@ a{overflow-wrap:anywhere}
             </div>
             <div>
               <div style="font-size:11px;opacity:0.8;margin-bottom:2px;">Total Laporan Batch 7</div>
-              <strong style="font-size:18px;" id="totalCohortReports">239</strong>
+              <strong style="font-size:18px;" id="totalCohortReports">314</strong>
             </div>
           </div>
 
@@ -4306,15 +4306,23 @@ function renderSiakadView(){
 }
 
 async function syncSuperFormFromSupabase(){
-  if(!window.__isJudgeDemoOnly && window.supabase){
+  if(!window.__isJudgeDemoOnly && window.supabase && typeof sb !== 'undefined'){
     try {
       const {data, error} = await sb.from('ama_superform_submissions')
         .select('*')
         .order('created_at', {ascending: false})
         .limit(2000);
       if(!error && Array.isArray(data) && data.length > 0){
-        const sbMapped = data.filter(r => !r.extra_meta?.is_registration && !r.extra_meta?.is_psychometric).map((r, idx) => ({
-          row_id: r.sheet_row_id || ('sb-' + idx),
+        const sbMapped = data.filter(r => {
+          const meta = r.extra_meta || {};
+          const cat = String(r.report_category || '');
+          if(meta.is_registration || meta.is_psychometric || meta.is_soulcheck) return false;
+          if(meta.status === 'rejected' || meta.annulled === true) return false;
+          if(cat.includes('Registrasi') || cat.includes('Asesmen Kapsul') || cat.includes('Daily SoulCheck')) return false;
+          return true;
+        }).map((r, idx) => ({
+          row_id: r.sheet_row_id || ('sb-' + (r.id || idx)),
+          sheet_row_id: r.sheet_row_id || null,
           submitted_at: r.submitted_at_raw || (r.created_at || '').slice(0, 16).replace('T', ' '),
           team_name: r.team_name || 'DOPAMINE TEAM — Creative Storyteller',
           full_name: r.full_name || 'Duta AMA Batch 7',
@@ -4325,11 +4333,10 @@ async function syncSuperFormFromSupabase(){
           reflection_text: r.reflection_text || '',
           difficulty_rating: r.difficulty_rating || '',
           satisfaction_score: Number(r.satisfaction_score || 5),
-          points_awarded: Number(r.points_awarded || 15),
+          points_awarded: Number(r.points_awarded || 10),
           extra_meta: r.extra_meta || {}
         }));
-        // Gabungkan data Supabase dengan 239 data historis spreadsheet tanpa duplikat
-        const existingSheetIds = new Set(sbMapped.map(x => x.row_id));
+        const existingSheetIds = new Set(sbMapped.map(x => x.sheet_row_id || x.row_id));
         const combined = sbMapped.concat(INITIAL_BATCH7_SUPERFORM.slice().reverse().filter(x => !existingSheetIds.has(x.row_id)));
         superformRecords = combined;
       }
@@ -5238,7 +5245,7 @@ function renderPsychometricModule(){
 
   const stageDoneRecord = saved[currentPsychStage];
   const isPostLockedByDays = (currentPsychStage === 'posttest' && !postUnlocked && !stageDoneRecord);
-  const isMidLockedByDays = (currentPsychStage === 'midtest' && activeDays < 5 && !window.__isDemoMode && !psychForceUnlockOverride && !stageDoneRecord);
+  const isMidLockedByDays = (currentPsychStage === 'midtest' && activeDays < 5 && !psychForceUnlockOverride && !stageDoneRecord);
 
   if(stageDoneRecord){
     if(lockNotice) lockNotice.classList.add('hidden');
@@ -7466,9 +7473,23 @@ function saveOfficialBaEmailBinding(emailStr, officialBaName){
 // PENTING: Mencari Duta Resmi dari 72 daftar.
 // 1. Selalu periksa `nameOrQuery` TERLEBIH DAHULU!
 // 2. JANGAN PERNAH fallback ke `profile.email` kecuali parameter `explicitEmailOnly` sengaja dikirim!
-function matchOfficialBatch7Ambassador(nameOrQuery, explicitEmailOnly){
+const NICKNAME_TO_CODE_MAP = {
+  'zey': 'AMA7-030', 'as-28322d': 'AMA7-030',
+  'fadli': 'AMA7-015', 'as-aaff56': 'AMA7-015',
+  'sabil': 'AMA7-017', 'as-14f6f1': 'AMA7-017',
+  'novi': 'AMA7-031', 'as-199eed': 'AMA7-031',
+  'raiz': 'AMA7-006', 'as-fc99a5': 'AMA7-006',
+  'mutiara': 'AMA7-022', 'berliana': 'AMA7-028',
+  'saskia': 'AMA7-039', 'rizki ramadhani': 'AMA7-044'
+};
+
+function matchOfficialBatch7Ambassador(nameOrQuery, explicitEmailOnly, teamHint){
   const q = normalizeBaStr(nameOrQuery);
-  if(q && q !== 'duta awaremind' && q !== 'duta baru awaremind'){
+  if(q && q !== 'duta awaremind' && q !== 'duta baru awaremind' && !q.startsWith('duta ama batch 7')){
+    if(NICKNAME_TO_CODE_MAP[q]){
+      const byNick = INITIAL_BATCH7_ROSTER.find(r => r.code === NICKNAME_TO_CODE_MAP[q]);
+      if(byNick) return byNick;
+    }
     // A. Exact match nama lengkap, kode referral, atau AS_ID
     let exact = INITIAL_BATCH7_ROSTER.find(r =>
       normalizeBaStr(r.name) === q ||
@@ -7482,12 +7503,17 @@ function matchOfficialBatch7Ambassador(nameOrQuery, explicitEmailOnly){
     exact = INITIAL_BATCH7_ROSTER.find(r => r.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim() === qAlpha);
     if(exact) return exact;
 
-    // C. StartsWith atau Token Unik (minimal 4 huruf)
+    // C. StartsWith atau Token Unik (minimal 4 huruf), dengan disambiguasi tim bila ada teamHint
     if(qAlpha.length >= 4){
+      const tHint = String(teamHint || '').toUpperCase();
       const startsMatches = INITIAL_BATCH7_ROSTER.filter(r =>
         r.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').startsWith(qAlpha)
       );
       if(startsMatches.length === 1) return startsMatches[0];
+      if(startsMatches.length > 1 && tHint){
+        const byTeam = startsMatches.find(r => String(r.team || '').toUpperCase().includes(tHint.split(' ')[0]));
+        if(byTeam) return byTeam;
+      }
 
       const qTokens = qAlpha.split(' ').filter(t => t.length >= 4);
       for(const tok of qTokens){
@@ -7495,6 +7521,10 @@ function matchOfficialBatch7Ambassador(nameOrQuery, explicitEmailOnly){
           r.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').includes(tok)
         );
         if(tokMatches.length === 1) return tokMatches[0];
+        if(tokMatches.length > 1 && tHint){
+          const byTeam = tokMatches.find(r => String(r.team || '').toUpperCase().includes(tHint.split(' ')[0]));
+          if(byTeam) return byTeam;
+        }
       }
     }
   }
@@ -7517,13 +7547,8 @@ function isNewSubmissionAfterBaseline(r){
   if(meta.is_registration || meta.is_psychometric || meta.is_soulcheck || meta.status === 'rejected' || meta.annulled === true) return false;
   const cat = String(r.report_category || '');
   if(cat.includes('Registrasi') || cat.includes('Asesmen Kapsul') || cat.includes('Daily SoulCheck')) return false;
-  const rid = Number(r.sheet_row_id || r.row_id || 0);
+  const rid = Number(r.sheet_row_id || (typeof r.row_id === 'number' && r.row_id <= 314 ? r.row_id : 0));
   if(rid > 0 && rid <= 314) return false;
-  // Pastikan laporan bertanggal <= 16 November 2026 tidak dihitung ganda karena sudah masuk di Rekap 16 November
-  const rawDate = String(r.submitted_at || r.submitted_at_raw || '');
-  if(/^(0?[1-9]|1[0-6])\/11\/2026/.test(rawDate) || /^2026-11-(0[1-9]|1[0-6])/.test(rawDate) || /\/10\/2026/.test(rawDate) || /^2026-10-/.test(rawDate)){
-    return false;
-  }
   return true;
 }
 
@@ -7567,7 +7592,7 @@ computeSiakadAcademicRecord = function(studentObj){
         if(!isNewSubmissionAfterBaseline(r)) return false;
         const rNameNorm = normalizeBaStr(r.full_name);
         if(rNameNorm === targetNameNorm) return true;
-        const resolved = matchOfficialBatch7Ambassador(r.full_name || r.extra_meta?.as_id || '', r.extra_meta?.email || '');
+        const resolved = matchOfficialBatch7Ambassador(r.full_name || r.extra_meta?.referral_code || r.extra_meta?.as_id || '', r.extra_meta?.email || '', r.team_name || '');
         return resolved ? normalizeBaStr(resolved.name) === targetNameNorm : false;
       })
     : [];
@@ -8296,9 +8321,26 @@ $('#authForm')?.addEventListener('submit', e => {
       email: cleanEmail
     };
 
+    const resolveDropdownOrCustom = (selQ, customQ, fallbackVal, emptyToast) => {
+      const selEl = $(selQ);
+      const custEl = $(customQ);
+      if(selEl && selEl.value === '__CUSTOM__'){
+        const cVal = (custEl?.value || '').trim();
+        if(cVal.length < 3){
+          toast(emptyToast);
+          custEl?.focus();
+          return null;
+        }
+        return cVal;
+      }
+      return selEl?.value || fallbackVal;
+    };
+
     if(catCode === 'zoom'){
       reportCategory = 'Laporan Kehadiran Sesi Zoom — Individu';
-      activityTitle = $('#sfZoomSession')?.value || 'Sesi Onboarding Night';
+      const zTitle = resolveDropdownOrCustom('#sfZoomSession', '#sfZoomSessionCustom', 'Sesi Onboarding Night', 'Ketik nama sesi Zoom terlebih dahulu!');
+      if(!zTitle) return;
+      activityTitle = zTitle;
       proofLink = ($('#sfZoomProof')?.value || '').trim();
       reflectionText = ($('#sfZoomInsight')?.value || '').trim();
       satisfactionScore = Number($('#sfZoomRating')?.value || 5);
@@ -8307,7 +8349,9 @@ $('#authForm')?.addEventListener('submit', e => {
       pointsAwarded = 30;
     } else if(catCode === 'wajib'){
       reportCategory = 'Laporan Misi Wajib (Mandatory Missions) — Individu';
-      activityTitle = $('#sfMandMission')?.value || 'Misi Wajib Individu';
+      const mTitle = resolveDropdownOrCustom('#sfMandMission', '#sfMandMissionCustom', 'Misi Wajib Individu', 'Ketik nama misi wajib terlebih dahulu!');
+      if(!mTitle) return;
+      activityTitle = mTitle;
       proofLink = ($('#sfMandLink')?.value || '').trim();
       reflectionText = ($('#sfMandNote')?.value || 'Aman').trim();
       difficultyRating = $('#sfMandDiff')?.value || '';
@@ -8315,7 +8359,9 @@ $('#authForm')?.addEventListener('submit', e => {
       pointsAwarded = 15;
     } else if(catCode === 'challenge'){
       reportCategory = 'Laporan Tantangan Mingguan (Fun Weekly Challenges) — Individu';
-      activityTitle = $('#sfChalName')?.value || 'Weekly Challenge';
+      const cTitle = resolveDropdownOrCustom('#sfChalName', '#sfChalNameCustom', 'Weekly Challenge', 'Ketik nama tantangan mingguan terlebih dahulu!');
+      if(!cTitle) return;
+      activityTitle = cTitle;
       proofLink = ($('#sfChalLink')?.value || '').trim();
       reflectionText = ($('#sfChalReflect')?.value || '').trim();
       difficultyRating = $('#sfChalDiff')?.value || '';
@@ -8324,7 +8370,8 @@ $('#authForm')?.addEventListener('submit', e => {
       pointsAwarded = 10;
     } else if(catCode === 'inisiatif'){
       reportCategory = 'Laporan Bonus Postingan Inisiatif & Kreatif — Individu';
-      const fmt = $('#sfInitFormat')?.value || 'Extra Education';
+      const fmt = resolveDropdownOrCustom('#sfInitFormat', '#sfInitFormatCustom', 'Extra Education', 'Ketik jenis karya inisiatif terlebih dahulu!');
+      if(!fmt) return;
       const rawTitle = ($('#sfInitTitle')?.value || 'Karya Edukasi Inisiatif').trim();
       activityTitle = `[${fmt}] ${rawTitle}`;
       proofLink = ($('#sfInitLink')?.value || '').trim();
@@ -8496,6 +8543,9 @@ getSavedPsychAssessments = function(){
   if(myAsId && window.__cloudPsychByBaKey[myAsId]){
     Object.assign(merged, window.__cloudPsychByBaKey[myAsId]);
   }
+  const realDays = (typeof getActiveJournalingDaysCount === 'function') ? getActiveJournalingDaysCount() : 0;
+  if(realDays < 5) delete merged.midtest;
+  if(realDays < 10) delete merged.posttest;
   return merged;
 };
 
@@ -8583,11 +8633,13 @@ async function pullOvernightDataFromSupabaseAndBridgeToSheet(forcePushAllToSheet
 }
 
 setTimeout(() => {
+  syncSuperFormFromSupabase();
   renderLiveCohortLeaderboard();
   renderSuperFormTracker();
   renderSiakadView();
   pullOvernightDataFromSupabaseAndBridgeToSheet(false);
-}, 300);
+}, 250);
+setInterval(syncSuperFormFromSupabase, 20000);
 
 
 
@@ -8894,7 +8946,15 @@ async function pushOfficial72ReferralCodesToSupabase(){
       position_role: r.role || 'Ambassador (Anggota Tim)',
       referral_code: r.referral_code,
       batch_number: 7,
-      cohort_status: 'active'
+      cohort_status: 'active',
+      base_zoom_pts: r.base_zoom_pts,
+      base_wajib_pts: r.base_wajib_pts,
+      base_challenge_pts: r.base_challenge_pts,
+      base_inisiatif_pts: r.base_inisiatif_pts,
+      base_referral_pts: r.base_referral_pts,
+      base_final_project_pts: r.base_final_project_pts,
+      base_cohort_pts: r.base_cohort_pts,
+      official_base_total: r.official_base_total
     }));
     await sb.from('ama_ambassador_roster').upsert(rosterPayload, { onConflict: 'referral_code' });
 
@@ -8942,11 +9002,15 @@ async function flushLocalPsychometricDirectlyToTable(){
         ? matchOfficialBatch7Ambassador(OFFICIAL_BA_EMAIL_MAP[activeEmail], '')
         : matchOfficialBatch7Ambassador(r.full_name || '', activeEmail);
 
-      const cleanAsId = matched ? matched.code : (r.as_id || 'AMA7-001');
-      const cleanName = matched ? matched.name : (r.full_name || 'Duta AMA Batch 7');
-      const cleanTeam = matched ? matched.team : (r.team_name || 'DOPAMINE TEAM — Creative Storyteller');
-      const cleanRef  = matched ? matched.referral_code : resolveOfficialReferralCode(cleanName, cleanTeam);
-      const stType    = r.assessment_type || 'pretest';
+      if(!matched) continue;
+      const realDays = (typeof getActiveJournalingDaysCount === 'function') ? getActiveJournalingDaysCount() : 0;
+      const stType = r.assessment_type || 'pretest';
+      if(stType === 'midtest' && realDays < 5) continue;
+      if(stType === 'posttest' && realDays < 10) continue;
+      const cleanAsId = matched.code;
+      const cleanName = matched.name;
+      const cleanTeam = matched.team;
+      const cleanRef  = matched.referral_code;
 
       const flushFlag = 'amabuddy_psych_table_v96_' + cleanAsId + '_' + stType;
       if(localStorage.getItem(flushFlag)) continue;
@@ -9031,8 +9095,7 @@ document.getElementById('submitPsychometricBtn')?.addEventListener('click', func
   }
 }, true);
 
-</script>
-<script>
+
 
 // V9.8 BIDIRECTIONAL PSYCHOMETRIC SYNC (PULIHKAN STATUS BABAK 1 DARI SUPABASE & LOCALSTORAGE LAMA)
 async function syncPsychometricStatusWithSupabase(){
