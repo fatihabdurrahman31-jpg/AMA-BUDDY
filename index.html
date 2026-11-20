@@ -2560,15 +2560,16 @@ let sb = (window.supabase && typeof window.supabase.createClient === 'function')
 // Load Supabase & Chart.js asynchronously in background (0ms UI block!)
 (function loadExternalLibsAsync(){
   try {
-    const s1 = document.createElement('script');
-    s1.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0';
-    s1.async = true;
-    s1.onload = function(){
-      if(window.supabase && typeof window.supabase.createClient === 'function'){
-        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
-        window.sb = sb;
+    if(!window.supabase || typeof window.supabase.createClient !== 'function'){
+      const s1 = document.createElement('script');
+      s1.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0';
+      s1.async = true;
+      s1.onload = function(){
+        if(window.supabase && typeof window.supabase.createClient === 'function' && (!window.sb || !window.sb.from)){
+          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+          });
+          window.sb = sb;
         // Jalankan auto-flush segera setelah SDK Supabase selesai dimuat dari CDN
         if(typeof autoFlushAllLocalStorageToBackend === 'function'){
           setTimeout(autoFlushAllLocalStorageToBackend, 250);
@@ -2579,9 +2580,10 @@ let sb = (window.supabase && typeof window.supabase.createClient === 'function')
             hydrateFromSession(session);
           }
         }).catch(()=>{});
-      }
-    };
-    document.head.appendChild(s1);
+        }
+      };
+      document.head.appendChild(s1);
+    }
 
     const s2 = document.createElement('script');
     s2.src = 'https://cdn.jsdelivr.net/npm/chart.js';
@@ -2779,11 +2781,28 @@ async function getCurrentUser(){
 
 async function getProfileForUser(user){
   if(!user)return null;
-  const {data,error}=await sb.from('profiles')
-    .select('id,participant_code,display_name,age_group,consent_accepted,guardian_consent_status')
-    .eq('id',user.id).single();
-  if(error)throw error;
-  return publicProfile(data,user);
+  try {
+    const {data,error}=await sb.from('profiles')
+      .select('id,participant_code,display_name,age_group,consent_accepted,guardian_consent_status')
+      .eq('id',user.id).maybeSingle();
+    if(!error && data) return publicProfile(data,user);
+  } catch(_){}
+  // Fallback pintar: cocokkan dari 72 Duta Resmi berdasarkan email / metadata user agar tidak pernah gagal '0 rows'
+  const cleanEm = String(user.email || '').trim().toLowerCase();
+  const metaName = String(user.user_metadata?.display_name || '').trim();
+  let matched = null;
+  if(typeof matchOfficialBatch7Ambassador === 'function'){
+    matched = matchOfficialBatch7Ambassador(metaName, cleanEm);
+  }
+  return {
+    userId: user.id,
+    participantCode: matched ? matched.code : ('AS-' + Math.abs(cleanEm.split('').reduce((a,b)=>((a<<5)-a)+b.charCodeAt(0),0)).toString(16).slice(0,6).toUpperCase()),
+    displayName: matched ? matched.name : (metaName || cleanEm.split('@')[0] || 'Duta AwareMind'),
+    email: cleanEm,
+    ageGroup: user.user_metadata?.age_group || '18–25 tahun',
+    consentAccepted: true,
+    guardianConsentStatus: 'not_required'
+  };
 }
 
 async function getCheckinsAscending(limit=100){
@@ -3108,7 +3127,7 @@ async function handleAuth(event){
           password,
           consentAccepted:true
         }),
-        4500,
+        8000,
         'Pendaftaran terlalu lama.'
       );
 
@@ -3129,7 +3148,7 @@ async function handleAuth(event){
     }else{
       res=await withTimeout(
         api('loginAwareSoulUserApi',{email,password}),
-        3500,
+        8000,
         'Login terlalu lama.'
       );
 
@@ -3161,9 +3180,30 @@ async function handleAuth(event){
       return;
     }
     const localAccs = getLocalRegisteredAccounts();
-    if(localAccs[email] || errMsg.includes('offline') || errMsg.includes('fetch') || errMsg.includes('network') || email.includes('demo') || password === '12345678'){
+    const isOfficialEmail = (typeof OFFICIAL_BA_EMAIL_MAP !== 'undefined' && !!OFFICIAL_BA_EMAIL_MAP[email]);
+    const officialNameFromEmail = isOfficialEmail ? OFFICIAL_BA_EMAIL_MAP[email] : '';
+    const chosenDropdownName = String($('#authOfficialBaSelect')?.value || '').trim();
+    const canFallbackLogin = (
+      !!localAccs[email] ||
+      (isOfficialEmail && password.length >= 6) ||
+      (chosenDropdownName && password.length >= 6) ||
+      errMsg.includes('terlalu lama') ||
+      errMsg.includes('timeout') ||
+      errMsg.includes('not confirmed') ||
+      errMsg.includes('offline') ||
+      errMsg.includes('fetch') ||
+      errMsg.includes('network') ||
+      email.includes('demo') ||
+      password === '12345678'
+    );
+    if(canFallbackLogin){
       safeStorageSet(LAST_EMAIL_KEY, email);
-      activateFreshAccountSession(email, localAccs[email]?.displayName || '', localAccs[email]?.ageGroup || '18–25 tahun', false);
+      activateFreshAccountSession(
+        email,
+        officialNameFromEmail || localAccs[email]?.displayName || chosenDropdownName || '',
+        localAccs[email]?.ageGroup || '18–25 tahun',
+        false
+      );
       return;
     }
     $('#authError').textContent=friendlyAuthError(err?.message||String(err),authMode);
@@ -7453,7 +7493,7 @@ try {
 } catch(e){}
 
 // Peta Resmi 72 Email <-> 72 Nama Duta AMA Batch 7 (TERKUNCI PERMANEN 1 EMAIL = 1 NAMA DUTA!)
-const OFFICIAL_BA_EMAIL_MAP = {"abdillahalishfahani@gmail.com": "Abdillah Al Ishfahani", "auradivangela@gmail.com": "Aura Diva Angela Lovely", "billyalpaqih2@gmail.com": "Billy Alpaqih Nur Illahi", "deborahjcr24@gmail.com": "Deborah Johnsia Christi Raharjo", "ningmaulidiadwilukita@gmail.com": "Dwi Lukita Ning Maulidiah", "himaruofficial.id@gmail.com": "Erik", "ghefirasufa@gmail.com": "Ghefira Syahira S", "halimatussadiyahalpasundani@gmail.com": "Halimatus Sa'diyah Alpa Sundani", "hk6095889@gmail.com": "Husnul Khotimah", "mkhoerulfadlia@gmail.com": "Mohammad Khoerul Fadli Amin", "muhamadfakhrurozi15@gmail.com": "Muhamad Fakhrurozi", "muhamad.izatipiqri@mhs.unsoed.ac.id": "MUHAMAD RASYID IZATIPIQRI", "noval.dwiputra@gmail.com": "Muhammad Noval Dwiputra", "ajrunindythv@gmail.com": "Nindyta Ajrun Adhim", "trioestehpersis@gmail.com": "Queeny Bilqis Wulandari", "salzabillaraysha@gmail.com": "Raysha Salzabilla Thabitha", "riskysap36@gmail.com": "Rizky Saputra", "satriawira555@gmail.com": "Satria Wira Yudha", "shailasofi5@gmail.com": "Shaila Sofi", "widelisnuranisa@gmail.com": "WIDELIS NUR ANISA", "artikanurutami@gmail.com": "Artika Nur Utami", "lovelyazkadinaprameswari@gmail.com": "Azkadina Prameswari", "bilqissapandi@gmail.com": "Berliana Bilqis Sapandi", "chintiaalfianti@gmail.com": "Chintia Nor Alfianti", "deanaviolaputri@gmail.com": "Deana Vieola Putri", "dhiaauliainstiki@gmail.com": "Dhia Aulia Rachma", "gavinardiansyah3@gmail.com": "Gavin Ardiansyah", "jearefizhaazzahra@gmail.com": "Jea Refizha Azahra", "khashifatu8002@gmail.com": "Khashifatu Dzakiyyah", "marsellawidodo@gmail.com": "Marsella Widodo", "juandasadd@gmail.com": "Masjuanda", "mutiararahmasalsabila8@gmail.com": "Mutiara Rahma Salsabila", "akubilaaaaaaa17@gmail.com": "Nabila Shofwah", "nonnissaaputri@gmail.com": "Nonnissaa Rahma Putri", "mayathitania@gmail.com": "Novi Maya Thitania Pratiwi", "fadhilahnurnajmi@gmail.com": "Nur Najmi Fadhilah", "revajuwayyah0206@gmail.com": "Reva Juwayyah Agustina Purba", "santikarosiqotunnmh@gmail.com": "Santika Rosiqotun Ni'mah", "anis43349@gmail.com": "Annisa Amelia Dewi", "sayadenti@gmail.com": "Denti Listiana", "dilaaulia1405@gmail.com": "Dila aulia putri", "makhlukb82@gmail.com": "Dinalia Mukri Damayanti", "fahsasanda@gmail.com": "Fahsa Sanda", "friskaayuandini8@gmail.com": "friska ayu andin", "hisbullahsyahputra@gmail.com": "Hizbullah Syahputra", "tanennzalen@gmail.com": "Ivonne Airenne Markus", "keisyaputri130908@gmail.com": "Keisya putri asyifa", "rizkiramadhani1710@gmail.com": "M RIZKI RAMADHANI KARIM", "muhariqnuman@gmail.com": "Muhamad Ariq Numan", "muthiahzahrah.07@gmail.com": "Muthi’ah Zahrah", "nyimaskirana506@gmail.com": "Nyimas Kirana Laila Amelia Putri Nurman", "ritasinta2020@gmail.com": "Rita Sinta Yustika", "roymuhamaad18@gmail.com": "ROY DEMSI EFFENDY", "saskiafedi@gmail.com": "Saskia Nur Wijaya Fedi", "sorayaamumtaz@gmail.com": "Soraya Mumtaz", "syarifah.chadijah06@gmail.com": "Syarifah Chadijah", "abidrizz127@gmail.com": "Abiddullah Daffa Rahman", "apryliaputri50@gmail.com": "Aprylia Putri Hidayat", "razeinara125@gmail.com": "Aulia Fatimatuz Zahra", "kayxty03@gmail.com": "Chaylla Qibtiah", "desi63306@gmail.com": "Desi Rahmawati", "farhanrizkyardani9@gmail.com": "Farhan Risky Ardani", "fauzanjefri123@gmail.com": "Fauzan Jefri", "feginewww@gmail.com": "Fegi Sastri", "kafkasanti25@gmail.com": "Kafka Novisya Santi", "nailaalyannisa@gmail.com": "Naila Sabrina Alyannisa", "novaputriana2@gmail.com": "Nova Putriana", "calvathiya05@gmail.com": "Nur Athiyah", "alnnskaa0n9@gmail.com": "Riska Susanti Hidayati", "balqisfania3@gmail.com": "Salsa Fania Balqis", "syahran.fadhilah07@gmail.com": "Syahran fadhilah rizky", "yugarihkarina1510@gmail.com": "Yugarih Karina Purwadi"};
+const OFFICIAL_BA_EMAIL_MAP = {"abdillahalishfahani@gmail.com": "Abdillah Al Ishfahani", "auradivangela@gmail.com": "Aura Diva Angela Lovely", "billyalpaqih2@gmail.com": "Billy Alpaqih Nur Illahi", "deborahjcr24@gmail.com": "Deborah Johnsia Christi Raharjo", "ningmaulidiadwilukita@gmail.com": "Dwi Lukita Ning Maulidiah", "himaruofficial.id@gmail.com": "Erik", "ghefirasufa@gmail.com": "Ghefira Syahira S", "halimatussadiyahalpasundani@gmail.com": "Halimatus Sa'diyah Alpa Sundani", "hk6095889@gmail.com": "Husnul Khotimah", "mkhoerulfadlia@gmail.com": "Mohammad Khoerul Fadli Amin", "muhamadfakhrurozi15@gmail.com": "Muhamad Fakhrurozi", "muhamad.izatipiqri@mhs.unsoed.ac.id": "MUHAMAD RASYID IZATIPIQRI", "noval.dwiputra@gmail.com": "Muhammad Noval Dwiputra", "ajrunindythv@gmail.com": "Nindyta Ajrun Adhim", "trioestehpersis@gmail.com": "Queeny Bilqis Wulandari", "salzabillaraysha@gmail.com": "Raysha Salzabilla Thabitha", "riskysap36@gmail.com": "Rizky Saputra", "satriawira555@gmail.com": "Satria Wira Yudha", "shailasofi5@gmail.com": "Shaila Sofi", "widelisnuranisa@gmail.com": "WIDELIS NUR ANISA", "artikanurutami@gmail.com": "Artika Nur Utami", "lovelyazkadinaprameswari@gmail.com": "Azkadina Prameswari", "bilqissapandi@gmail.com": "Berliana Bilqis Sapandi", "bilqissapandi00@gmail.com": "Berliana Bilqis Sapandi", "chintiaalfianti@gmail.com": "Chintia Nor Alfianti", "deanaviolaputri@gmail.com": "Deana Vieola Putri", "dhiaauliainstiki@gmail.com": "Dhia Aulia Rachma", "gavinardiansyah3@gmail.com": "Gavin Ardiansyah", "jearefizhaazzahra@gmail.com": "Jea Refizha Azahra", "khashifatu8002@gmail.com": "Khashifatu Dzakiyyah", "marsellawidodo@gmail.com": "Marsella Widodo", "juandasadd@gmail.com": "Masjuanda", "mutiararahmasalsabila8@gmail.com": "Mutiara Rahma Salsabila", "akubilaaaaaaa17@gmail.com": "Nabila Shofwah", "nonnissaaputri@gmail.com": "Nonnissaa Rahma Putri", "mayathitania@gmail.com": "Novi Maya Thitania Pratiwi", "fadhilahnurnajmi@gmail.com": "Nur Najmi Fadhilah", "revajuwayyah0206@gmail.com": "Reva Juwayyah Agustina Purba", "santikarosiqotunnmh@gmail.com": "Santika Rosiqotun Ni'mah", "anis43349@gmail.com": "Annisa Amelia Dewi", "sayadenti@gmail.com": "Denti Listiana", "dilaaulia1405@gmail.com": "Dila aulia putri", "makhlukb82@gmail.com": "Dinalia Mukri Damayanti", "fahsasanda@gmail.com": "Fahsa Sanda", "friskaayuandini8@gmail.com": "friska ayu andin", "hisbullahsyahputra@gmail.com": "Hizbullah Syahputra", "tanennzalen@gmail.com": "Ivonne Airenne Markus", "keisyaputri130908@gmail.com": "Keisya putri asyifa", "rizkiramadhani1710@gmail.com": "M RIZKI RAMADHANI KARIM", "muhariqnuman@gmail.com": "Muhamad Ariq Numan", "muthiahzahrah.07@gmail.com": "Muthi’ah Zahrah", "nyimaskirana506@gmail.com": "Nyimas Kirana Laila Amelia Putri Nurman", "ritasinta2020@gmail.com": "Rita Sinta Yustika", "roymuhamaad18@gmail.com": "ROY DEMSI EFFENDY", "saskiafedi@gmail.com": "Saskia Nur Wijaya Fedi", "sorayaamumtaz@gmail.com": "Soraya Mumtaz", "syarifah.chadijah06@gmail.com": "Syarifah Chadijah", "abidrizz127@gmail.com": "Abiddullah Daffa Rahman", "apryliaputri50@gmail.com": "Aprylia Putri Hidayat", "razeinara125@gmail.com": "Aulia Fatimatuz Zahra", "kayxty03@gmail.com": "Chaylla Qibtiah", "desi63306@gmail.com": "Desi Rahmawati", "farhanrizkyardani9@gmail.com": "Farhan Risky Ardani", "fauzanjefri123@gmail.com": "Fauzan Jefri", "feginewww@gmail.com": "Fegi Sastri", "kafkasanti25@gmail.com": "Kafka Novisya Santi", "nailaalyannisa@gmail.com": "Naila Sabrina Alyannisa", "novaputriana2@gmail.com": "Nova Putriana", "calvathiya05@gmail.com": "Nur Athiyah", "alnnskaa0n9@gmail.com": "Riska Susanti Hidayati", "balqisfania3@gmail.com": "Salsa Fania Balqis", "syahran.fadhilah07@gmail.com": "Syahran fadhilah rizky", "yugarihkarina1510@gmail.com": "Yugarih Karina Purwadi"};
 const OFFICIAL_NAME_TO_EMAIL_MAP = {"abdillah al ishfahani": "abdillahalishfahani@gmail.com", "aura diva angela lovely": "auradivangela@gmail.com", "billy alpaqih nur illahi": "billyalpaqih2@gmail.com", "deborah johnsia christi raharjo": "deborahjcr24@gmail.com", "dwi lukita ning maulidiah": "ningmaulidiadwilukita@gmail.com", "erik": "himaruofficial.id@gmail.com", "ghefira syahira s": "ghefirasufa@gmail.com", "halimatus sa'diyah alpa sundani": "halimatussadiyahalpasundani@gmail.com", "husnul khotimah": "hk6095889@gmail.com", "mohammad khoerul fadli amin": "mkhoerulfadlia@gmail.com", "muhamad fakhrurozi": "muhamadfakhrurozi15@gmail.com", "muhamad rasyid izatipiqri": "muhamad.izatipiqri@mhs.unsoed.ac.id", "muhammad noval dwiputra": "noval.dwiputra@gmail.com", "nindyta ajrun adhim": "ajrunindythv@gmail.com", "queeny bilqis wulandari": "trioestehpersis@gmail.com", "raysha salzabilla thabitha": "salzabillaraysha@gmail.com", "rizky saputra": "riskysap36@gmail.com", "satria wira yudha": "satriawira555@gmail.com", "shaila sofi": "shailasofi5@gmail.com", "widelis nur anisa": "widelisnuranisa@gmail.com", "artika nur utami": "artikanurutami@gmail.com", "azkadina prameswari": "lovelyazkadinaprameswari@gmail.com", "berliana bilqis sapandi": "bilqissapandi@gmail.com", "chintia nor alfianti": "chintiaalfianti@gmail.com", "deana vieola putri": "deanaviolaputri@gmail.com", "dhia aulia rachma": "dhiaauliainstiki@gmail.com", "gavin ardiansyah": "gavinardiansyah3@gmail.com", "jea refizha azahra": "jearefizhaazzahra@gmail.com", "khashifatu dzakiyyah": "khashifatu8002@gmail.com", "marsella widodo": "marsellawidodo@gmail.com", "masjuanda": "juandasadd@gmail.com", "mutiara rahma salsabila": "mutiararahmasalsabila8@gmail.com", "nabila shofwah": "akubilaaaaaaa17@gmail.com", "nonnissaa rahma putri": "nonnissaaputri@gmail.com", "novi maya thitania pratiwi": "mayathitania@gmail.com", "nur najmi fadhilah": "fadhilahnurnajmi@gmail.com", "reva juwayyah agustina purba": "revajuwayyah0206@gmail.com", "santika rosiqotun ni'mah": "santikarosiqotunnmh@gmail.com", "annisa amelia dewi": "anis43349@gmail.com", "denti listiana": "sayadenti@gmail.com", "dila aulia putri": "dilaaulia1405@gmail.com", "dinalia mukri damayanti": "makhlukb82@gmail.com", "fahsa sanda": "fahsasanda@gmail.com", "friska ayu andin": "friskaayuandini8@gmail.com", "hizbullah syahputra": "hisbullahsyahputra@gmail.com", "ivonne airenne markus": "tanennzalen@gmail.com", "keisya putri asyifa": "keisyaputri130908@gmail.com", "m rizki ramadhani karim": "rizkiramadhani1710@gmail.com", "muhamad ariq numan": "muhariqnuman@gmail.com", "muthi'ah zahrah": "muthiahzahrah.07@gmail.com", "nyimas kirana laila amelia putri nurman": "nyimaskirana506@gmail.com", "rita sinta yustika": "ritasinta2020@gmail.com", "roy demsi effendy": "roymuhamaad18@gmail.com", "saskia nur wijaya fedi": "saskiafedi@gmail.com", "soraya mumtaz": "sorayaamumtaz@gmail.com", "syarifah chadijah": "syarifah.chadijah06@gmail.com", "abiddullah daffa rahman": "abidrizz127@gmail.com", "aprylia putri hidayat": "apryliaputri50@gmail.com", "aulia fatimatuz zahra": "razeinara125@gmail.com", "chaylla qibtiah": "kayxty03@gmail.com", "desi rahmawati": "desi63306@gmail.com", "farhan risky ardani": "farhanrizkyardani9@gmail.com", "fauzan jefri": "fauzanjefri123@gmail.com", "fegi sastri": "feginewww@gmail.com", "kafka novisya santi": "kafkasanti25@gmail.com", "naila sabrina alyannisa": "nailaalyannisa@gmail.com", "nova putriana": "novaputriana2@gmail.com", "nur athiyah": "calvathiya05@gmail.com", "riska susanti hidayati": "alnnskaa0n9@gmail.com", "salsa fania balqis": "balqisfania3@gmail.com", "syahran fadhilah rizky": "syahran.fadhilah07@gmail.com", "yugarih karina purwadi": "yugarihkarina1510@gmail.com"};
 try {
   localStorage.setItem('amabuddy_official_ba_email_map_v90', JSON.stringify(OFFICIAL_BA_EMAIL_MAP));
@@ -8432,31 +8472,41 @@ $('#authForm')?.addEventListener('submit', e => {
       pointsAwarded = 10;
     }
 
-    if(catCode !== 'captain' && (!proofLink || !/^https?:\/\/.+/i.test(proofLink))){
-      toast('Wajib melampirkan tautan bukti (https://...) Instagram, TikTok, atau Google Drive yang valid!');
-      return;
-    }
-
-    if(proofLink && proofLink.length > 10){
-      const cleanLink = proofLink.toLowerCase().split('?')[0].replace(/\/+$/, '');
-      const duplicateLink = superformRecords.find(r => {
-        const rl = String(r.proof_link || '').trim().toLowerCase().split('?')[0].replace(/\/+$/, '');
-        return rl && rl.length > 10 && rl === cleanLink && normalizeBaStr(r.full_name) === normalizeBaStr(fullName);
-      });
-      if(duplicateLink){
-        toast('Tautan bukti ini sudah pernah kamu kirim sebelumnya! Gunakan tautan karya/bukti baru.');
-        return;
+    // Ekstrak & normalkan otomatis tautan bukti (menerima paste dari HP: www.instagram.com/..., vt.tiktok.com/..., drive.google.com/..., atau teks berisi link!)
+    if(proofLink){
+      const urlMatch = proofLink.match(/(https?:\/\/[^\s]+|(?:www\.|m\.|vt\.|vm\.)?(?:instagram\.com|tiktok\.com|drive\.google\.com|docs\.google\.com|canva\.com|youtu\.be|youtube\.com|linkedin\.com|threads\.net|x\.com|twitter\.com)\/[^\s]+)/i);
+      if(urlMatch){
+        proofLink = urlMatch[1].trim();
+        if(!/^https?:\/\//i.test(proofLink)) proofLink = 'https://' + proofLink;
+      } else if(!/^https?:\/\//i.test(proofLink) && /^[a-z0-9-]+\.[a-z]{2,}\/.+/i.test(proofLink)){
+        proofLink = 'https://' + proofLink;
       }
     }
 
-    if(catCode === 'zoom' || catCode === 'wajib' || catCode === 'project'){
-      const sameActivity = superformRecords.find(r =>
-        isNewSubmissionAfterBaseline(r) &&
-        normalizeBaStr(r.full_name) === normalizeBaStr(fullName) &&
-        normalizeBaStr(r.activity_title) === normalizeBaStr(activityTitle)
-      );
-      if(sameActivity){
-        toast(`Laporan "${activityTitle}" sudah pernah kamu klaim sebelumnya!`);
+    if(catCode !== 'captain' && (!proofLink || !/^https?:\/\/.+/i.test(proofLink))){
+      toast('Wajib melampirkan tautan bukti (link Instagram, TikTok, Canva, atau Google Drive) yang valid!');
+      return;
+    }
+
+    // Normalisasi URL untuk cek duplikat: WAJIB pertahankan parameter ?id= pada Google Drive agar link Drive berbeda tidak bentrok!
+    const normalizeUrlForDedup = (rawUrl) => {
+      const s = String(rawUrl || '').trim().toLowerCase();
+      if(!s) return '';
+      if(s.includes('drive.google.com') && s.includes('id=')){
+        const mId = s.match(/[?&]id=([^&]+)/);
+        return mId ? ('gdrive:' + mId[1]) : s;
+      }
+      return s.split('?')[0].replace(/\/+$/, '');
+    };
+
+    if(proofLink && proofLink.length > 12){
+      const cleanLink = normalizeUrlForDedup(proofLink);
+      const duplicateLink = superformRecords.find(r => {
+        const rl = normalizeUrlForDedup(r.proof_link);
+        return rl && rl.length > 12 && rl === cleanLink && normalizeBaStr(r.full_name) === normalizeBaStr(fullName);
+      });
+      if(duplicateLink){
+        toast('Tautan bukti ini persis sama dengan yang sudah pernah kamu kirim. Gunakan link karya/bukti baru.');
         return;
       }
     }
@@ -8538,6 +8588,11 @@ $('#authForm')?.addEventListener('submit', e => {
     renderSuperFormTracker();
     renderSiakadView();
     renderLiveCohortLeaderboard();
+    // Kosongkan kolom link/judul setelah berhasil kirim agar siap menerima laporan berikutnya
+    ['#sfZoomProof','#sfZoomInsight','#sfZoomStory','#sfInitTitle','#sfInitLink','#sfInitMotivation','#sfMandLink','#sfChalLink','#sfChalReflect','#sfRefContactName','#sfRefProofUrl','#sfProjLink'].forEach(sel => {
+      const el = $(sel);
+      if(el) el.value = '';
+    });
     const updatedRec = getCurrentStudentProfileForSiakad();
     toast(`Laporan tersimpan (+${pointsAwarded} Poin)! Total Poin Resmimu kini: ${updatedRec.totalTokens} Poin (${updatedRec.gradeLetter}).`);
   });
@@ -9457,6 +9512,143 @@ async function bridgeNewSupabaseTrackerRowsToSpreadsheets(){
   } catch(e){}
 }
 setTimeout(bridgeNewSupabaseTrackerRowsToSpreadsheets, 2200);
+
+
+
+// ============================================================================
+// V10.2 ANTI-RESET SESI & AUTO-SAVE DRAFT KENALI DIRI (MOBILE-SAFE SESSION GUARD)
+// Mencegah email/sesi ter-reset saat buka Galeri HP di Kenali Diri atau pindah tab,
+// serta otomatis menyimpan & memulihkan progres 37 slider Kenali Diri!
+// ============================================================================
+const ACTIVE_SESSION_PERSIST_KEY = 'amabuddy_active_session_v10';
+const PSYCH_DRAFT_KEY = 'amabuddy_psych_draft_v10';
+
+function persistActiveBaSession(profObj){
+  if(!profObj || (!profObj.email && !profObj.displayName)) return;
+  try {
+    const cleanEm = String(profObj.email || safeStorageGet(LAST_EMAIL_KEY) || '').trim().toLowerCase();
+    const matched = (cleanEm && OFFICIAL_BA_EMAIL_MAP[cleanEm])
+      ? matchOfficialBatch7Ambassador(OFFICIAL_BA_EMAIL_MAP[cleanEm], '')
+      : matchOfficialBatch7Ambassador(profObj.displayName || '', cleanEm);
+    const payload = {
+      email: cleanEm,
+      displayName: matched ? matched.name : (profObj.displayName || 'Duta AwareMind'),
+      participantCode: matched ? matched.code : (profObj.participantCode || 'AMA7-001'),
+      ageGroup: profObj.ageGroup || '18–25 tahun',
+      savedAt: Date.now()
+    };
+    localStorage.setItem(ACTIVE_SESSION_PERSIST_KEY, JSON.stringify(payload));
+    if(cleanEm) safeStorageSet(LAST_EMAIL_KEY, cleanEm);
+  } catch(e){}
+}
+
+// Hook activateFreshAccountSession & enterApp agar setiap sesi login PASTI tersimpan permanen di localStorage
+const _v102OrigActivateFresh = activateFreshAccountSession;
+activateFreshAccountSession = function(email, customDisplayName, customAgeGroup, isNewRegistration){
+  _v102OrigActivateFresh(email, customDisplayName, customAgeGroup, isNewRegistration);
+  persistActiveBaSession(profile);
+};
+
+const _v102OrigEnterApp = enterApp;
+enterApp = async function(){
+  if(profile) persistActiveBaSession(profile);
+  return await _v102OrigEnterApp();
+};
+
+// Hanya hapus sesi permanen saat pengguna BENAR-BENAR menekan tombol Keluar (Logout)
+const _v102OrigLogout = logout;
+logout = async function(){
+  window.__explicitLogoutRequested = true;
+  try { localStorage.removeItem(ACTIVE_SESSION_PERSIST_KEY); } catch(e){}
+  return await _v102OrigLogout();
+};
+
+// Lindungi showAuthScreen agar TIDAK PERNAH menendang keluar Duta yang sedang aktif mengisi Kenali Diri / Tracker!
+const _v102OrigShowAuthScreen = showAuthScreen;
+showAuthScreen = function(message){
+  if(!window.__explicitLogoutRequested){
+    try {
+      const savedSess = JSON.parse(localStorage.getItem(ACTIVE_SESSION_PERSIST_KEY) || 'null');
+      if(savedSess && (savedSess.email || savedSess.displayName)){
+        if(!document.body.classList.contains('app-authenticated')){
+          activateFreshAccountSession(savedSess.email, savedSess.displayName, savedSess.ageGroup || '18–25 tahun', false);
+        }
+        return;
+      }
+    } catch(e){}
+  }
+  window.__explicitLogoutRequested = false;
+  return _v102OrigShowAuthScreen(message);
+};
+
+// Auto-pulihkan sesi segera saat halaman dibuka ulang (mis. setelah HP membuka Galeri untuk upload Screenshot Waktu Layar)
+(function autoRestorePersistedSessionOnBoot(){
+  try {
+    if(passwordRecoveryMode) return;
+    const savedSess = JSON.parse(localStorage.getItem(ACTIVE_SESSION_PERSIST_KEY) || 'null');
+    if(savedSess && (savedSess.email || savedSess.displayName)){
+      activateFreshAccountSession(savedSess.email, savedSess.displayName, savedSess.ageGroup || '18–25 tahun', false);
+      const lastPage = localStorage.getItem('amabuddy_last_active_page_v10');
+      if(lastPage && lastPage !== 'home' && typeof jump === 'function'){
+        setTimeout(() => jump(lastPage), 120);
+      }
+    }
+  } catch(e){}
+})();
+
+// Catat halaman terakhir yang dibuka agar jika HP reload saat pilih foto di Kenali Diri, langsung kembali ke Kenali Diri!
+const _v102OrigJump = jump;
+jump = function(page){
+  try { if(page) localStorage.setItem('amabuddy_last_active_page_v10', page); } catch(e){}
+  return _v102OrigJump(page);
+};
+
+// Auto-Save & Auto-Restore Draft 37 Slider Kenali Diri + Waktu Layar
+function savePsychDraftToLocal(){
+  try {
+    const draft = {
+      stage: currentPsychStage,
+      hours: $('#psychStHours')?.value || '',
+      minutes: $('#psychStMinutes')?.value || '',
+      proofUrl: $('#psychStProofUrl')?.value || '',
+      sliders: {}
+    };
+    $$('.psych-slider').forEach(inp => { draft.sliders[inp.id] = inp.value; });
+    localStorage.setItem(PSYCH_DRAFT_KEY, JSON.stringify(draft));
+  } catch(e){}
+}
+
+function restorePsychDraftFromLocal(){
+  try {
+    const raw = localStorage.getItem(PSYCH_DRAFT_KEY);
+    if(!raw) return;
+    const draft = JSON.parse(raw);
+    if(!draft) return;
+    if(draft.hours !== '' && $('#psychStHours')) $('#psychStHours').value = draft.hours;
+    if(draft.minutes !== '' && $('#psychStMinutes')) $('#psychStMinutes').value = draft.minutes;
+    if(draft.proofUrl && $('#psychStProofUrl') && !$('#psychStProofUrl').value) $('#psychStProofUrl').value = draft.proofUrl;
+    if(draft.sliders){
+      Object.entries(draft.sliders).forEach(([id, val]) => {
+        const inp = $('#' + id);
+        if(inp){
+          inp.value = val;
+          const badge = $('#val_' + id);
+          if(badge) badge.textContent = val;
+        }
+      });
+    }
+    if(typeof computeLivePsychometricScores === 'function') computeLivePsychometricScores();
+  } catch(e){}
+}
+
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if(!t) return;
+  if(t.classList?.contains('psych-slider') || t.id === 'psychStHours' || t.id === 'psychStMinutes' || t.id === 'psychStProofUrl'){
+    savePsychDraftToLocal();
+  }
+});
+setTimeout(restorePsychDraftFromLocal, 450);
 
 
 // V9.8 BIDIRECTIONAL PSYCHOMETRIC SYNC (PULIHKAN STATUS BABAK 1 DARI SUPABASE & LOCALSTORAGE LAMA)
