@@ -4389,7 +4389,7 @@ async function syncSuperFormFromSupabase(){
         const seenNewKeys = new Set();
         allNew.forEach(item => {
           if(!item) return;
-          const k = `${normalizeBaStr(item.full_name)}|${String(item.report_category||'').trim().toLowerCase()}|${String(item.activity_title||'').trim().toLowerCase()}|${String(item.proof_link||'').trim().toLowerCase().split('?')[0]}`;
+          const k = `${normalizeBaStr(item.full_name)}|${String(item.submitted_at||item.submitted_at_raw||'').trim().slice(0,16)}|${String(item.report_category||'').trim().toLowerCase()}|${String(item.activity_title||'').trim().toLowerCase()}|${String(item.proof_link||'').trim().toLowerCase()}`;
           if(seenNewKeys.has(k)) return;
           seenNewKeys.add(k);
           dedupNew.push(item);
@@ -7656,7 +7656,7 @@ computeSiakadAcademicRecord = function(studentObj){
   let addZoomPts = 0, addWajibPts = 0, addChalPts = 0, addInisPts = 0, addRefPts = 0, addFpPts = 0;
   const seenReportKeys = new Set();
   newReports.forEach(r => {
-    const dedupKey = `${String(r.report_category||'').trim().toLowerCase()}|${String(r.activity_title||'').trim().toLowerCase()}|${String(r.proof_link||'').trim().toLowerCase().split('?')[0]}`;
+    const dedupKey = `${String(r.submitted_at||r.submitted_at_raw||'').trim().slice(0,16)}|${String(r.report_category||'').trim().toLowerCase()}|${String(r.activity_title||'').trim().toLowerCase()}|${String(r.proof_link||'').trim().toLowerCase()}`;
     if(seenReportKeys.has(dedupKey)) return;
     seenReportKeys.add(dedupKey);
     const c = String(r.report_category || '').toLowerCase();
@@ -8488,28 +8488,15 @@ $('#authForm')?.addEventListener('submit', e => {
       return;
     }
 
-    // Normalisasi URL untuk cek duplikat: WAJIB pertahankan parameter ?id= pada Google Drive agar link Drive berbeda tidak bentrok!
-    const normalizeUrlForDedup = (rawUrl) => {
-      const s = String(rawUrl || '').trim().toLowerCase();
-      if(!s) return '';
-      if(s.includes('drive.google.com') && s.includes('id=')){
-        const mId = s.match(/[?&]id=([^&]+)/);
-        return mId ? ('gdrive:' + mId[1]) : s;
-      }
-      return s.split('?')[0].replace(/\/+$/, '');
-    };
-
-    if(proofLink && proofLink.length > 12){
-      const cleanLink = normalizeUrlForDedup(proofLink);
-      const duplicateLink = superformRecords.find(r => {
-        const rl = normalizeUrlForDedup(r.proof_link);
-        return rl && rl.length > 12 && rl === cleanLink && normalizeBaStr(r.full_name) === normalizeBaStr(fullName);
-      });
-      if(duplicateLink){
-        toast('Tautan bukti ini persis sama dengan yang sudah pernah kamu kirim. Gunakan link karya/bukti baru.');
-        return;
-      }
+    // Izinkan link folder Google Drive / link profil yang sama untuk bukti screenshot atau laporan yang berbeda!
+    // Hanya cegah klik ganda persis sama (kategori + judul + refleksi + link identik) dalam 2 menit terakhir.
+    const submitFingerprint = `${normalizeBaStr(fullName)}|${normalizeBaStr(reportCategory)}|${normalizeBaStr(activityTitle)}|${normalizeBaStr(reflectionText)}|${String(proofLink || '').trim().toLowerCase()}`;
+    if(window.__lastTrackerSubmitFp === submitFingerprint && (Date.now() - (window.__lastTrackerSubmitAt || 0)) < 120000){
+      toast('Laporan yang persis sama baru saja kamu kirim. Tunggu sebentar atau ubah judul/catatan jika ingin mengirim bukti baru.');
+      return;
     }
+    window.__lastTrackerSubmitFp = submitFingerprint;
+    window.__lastTrackerSubmitAt = Date.now();
 
     const nowStr = new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'});
     const newRecord = {
